@@ -1,9 +1,10 @@
 import {shadowDomCustomCssVariableObserver, cleanPropertyValue} from './observe-css-var.feature.js'
 
+const url = new URL(import.meta.url)
 
 let loadTemplate = () => {
-    const cssPromise = fetch(new URL("./color-wheel.element.css", import.meta.url)).then(response => response.text())
-    const htmlPromise = fetch(new URL("./color-wheel.element.html", import.meta.url)).then(response => response.text())
+    const cssPromise = fetch(new URL("./color-wheel.element.css", url)).then(response => response.text())
+    const htmlPromise = fetch(new URL("./color-wheel.element.html", url)).then(response => response.text())
     const templatePromise = Promise.all([cssPromise, htmlPromise]).then(([css, html]) => {
       const templateElement = document.createElement("template")
       templateElement.innerHTML = `${css ? `<style>${css}</style>` : ''}${html}`
@@ -61,8 +62,8 @@ let loadTemplate = () => {
 
         const initDrag = (callback) => {
             const defaultPrevented = e => { e.preventDefault(); e.stopPropagation(); callback(e) } 
-            window.addEventListener("pointermove", defaultPrevented, {capture: true})
-            window.addEventListener("pointerup", () => window.removeEventListener("pointermove", defaultPrevented, {capture: true}),  { once: true, capture: true })
+            globalThis.addEventListener("pointermove", defaultPrevented, {capture: true})
+            globalThis.addEventListener("pointerup", () => globalThis.removeEventListener("pointermove", defaultPrevented, {capture: true}),  { once: true, capture: true })
         }
 
         const fromCenterPointAndRadius = ({ centerPoint, innerRadiusPerc, radius }) => ({
@@ -170,9 +171,9 @@ let loadTemplate = () => {
             case 'desktop':
             case 'mobile':
                 return uiMode
-            default:
-                return cleanPropertyValue(computedStyle.getPropertyValue("--default-ui-mode"))
         }
+        return cleanPropertyValue(computedStyle.getPropertyValue("--default-ui-mode"))
+
 }
 
     get hue(){
@@ -221,6 +222,12 @@ const arithmetric = {
     calculateDistanceBetween2Point: ({x: x1, y: y1}, {x: x2, y: y2}) => Math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
 }
   
-  const elementTagName = "color-wheel"
-  customElements.get(elementTagName) || customElements.define(elementTagName, ColorWheelElement)
+const elementName = url.searchParams.get('named')
+if(elementName){
+    if (customElements.get(elementName) != null){
+        console.error(`A custom element with name "${elementName}" already exists`)
+    } else {
+        customElements.define(elementName, ColorWheelElement)
+    }
+}
   
