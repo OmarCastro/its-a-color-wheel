@@ -1,6 +1,5 @@
 
 const getWheel = (element) => element.shadowRoot.querySelector('.color-wheel')
-const getWheel = (element) => element.shadowRoot.querySelector('.color-wheel')
 
 export function getColorWheelCenterPoint(element){
     const wheel = getWheel(element)
