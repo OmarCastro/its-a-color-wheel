@@ -73,7 +73,6 @@ let loadTemplate = () => {
             calculateSaturationFromMouseEvent(event) {
                 const r = this.calculateDistanceFromMouseEvent(event)
                 const rperc = Math.min(100, Math.max(0, r * 100 / radius))
-                console.log(JSON.stringify({r, rperc, radius, centerPoint, x: event.clientX, y: event.clientY}))
                 return Math.round(Math.min(100, Math.max(0, (rperc - innerRadiusPerc) * 100 / (100 - innerRadiusPerc))))
             }
         })
