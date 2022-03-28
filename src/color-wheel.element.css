@@ -1,5 +1,5 @@
 :host {
-    --inner-radius: 60%;
+    --inner-radius: var(--color-wheel--inner-radius, 60%);
     --radius: 5cm;
     --thumb-diameter: 1cm;
     --hue: 0;
@@ -21,9 +21,7 @@
 .container {
     position: relative;
     display: inline-block;
-
 }
-
 
 
 .color-wheel {

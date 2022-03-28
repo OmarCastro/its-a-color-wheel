@@ -5,3 +5,8 @@
 .ui-mode--desktop {
     --ui-mode: "desktop"
 }
+
+.inner-radius--none {
+    --color-wheel--inner-radius: 0%
+
+}
