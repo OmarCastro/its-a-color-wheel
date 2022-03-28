@@ -1,0 +1,7 @@
+.ui-mode--mobile {
+    --ui-mode: "mobile"
+}
+
+.ui-mode--desktop {
+    --ui-mode: "desktop"
+}
