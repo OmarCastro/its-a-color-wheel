@@ -5,7 +5,12 @@
         <meta name="description" content="documentation of it's a color wheel component">
         <meta name="keywords" content="color wheel webcomponents">
         <link rel="stylesheet" href="doc.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/base16/dracula.min.css" integrity="sha512-zKpFlhUX8c+WC6H/XTJavnEpWFt2zH9BU9vu0Hry5Y+SEgG21pRMFcecS7DgDXIegXBQ3uK9puwWPP3h6WSR9g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
         <script type="module" src="../src/color-wheel.element.js?named=color-wheel"></script>
+        <script type="module" src="doc.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js" defer integrity="sha512-BNc7saQYlxCL10lykUYhFBcnzdKMnjx5fp5s5wPucDyZ7rKNwCoqJh1GwEAIhuePEK4WM9askJBRsu7ma0Rzvg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/languages/css.min.js" defer integrity="sha512-SD06mVimKXJwNGnT3eDxfzVCOKsRXV7/IKSEhB3XmjJ7eN0saLzrW/As/9QmqljUJxa/+il3DWJz7cR7VupJDQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/languages/xml.min.js" defer integrity="sha512-+bb1+kzXMhHsUlA+lQfd4nSdOlgxtCvUYY5Q31pd4kloJ1fuzaplaepw+k8uGPyjO3ZzKCYe8NsTuVl29IG4wg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     </head>
     
     <body>
@@ -37,6 +42,17 @@
             <h4> Mobile mode </h4>
 
             <color-wheel class="ui-mode--mobile"></color-wheel>
+
+            
+            <pre><code class="language-xml">
+                &lt;color-wheel class="ui-mode--mobile">&lt;/color-wheel>
+            </code></pre>
+
+            <pre><code class="language-css">
+                .ui-mode--mobile{
+                    --ui-mode: "mobile" 
+                }
+            </code></pre>
             <h4> Desktop mode </h4>
 
 
