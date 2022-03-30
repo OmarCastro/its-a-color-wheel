@@ -23,6 +23,10 @@
     display: inline-block;
 }
 
+.container--desktop-ui {
+  --inner-radius: var(--color-wheel--inner-radius, 0%);
+}
+
 
 .color-wheel {
   pointer-events: auto;
@@ -30,6 +34,7 @@
   touch-action: none;
   min-height: calc(2 * var(--radius));
   min-width: calc(2 * var(--radius));
+  border-radius: 50%;
   background: radial-gradient(circle closest-side at center, #fff var(--inner-radius),  transparent 100%), conic-gradient(
       hsl(360 100% 50%),
       hsl(345 100% 50%),
@@ -63,6 +68,34 @@
 
 }
 
+.container--hsl .color-wheel {
+  background: radial-gradient(circle closest-side at center, hsl(0 0% 50%) var(--inner-radius),  transparent 100%), conic-gradient(
+      hsl(360 100% 50%),
+      hsl(345 100% 50%),
+      hsl(330 100% 50%),
+      hsl(315 100% 50%),
+      hsl(300 100% 50%),
+      hsl(285 100% 50%),
+      hsl(270 100% 50%),
+      hsl(255 100% 50%),
+      hsl(240 100% 50%),
+      hsl(225 100% 50%),
+      hsl(210 100% 50%),
+      hsl(195 100% 50%),
+      hsl(180 100% 50%),
+      hsl(150 100% 50%),
+      hsl(135 100% 50%),
+      hsl(120 100% 50%),
+      hsl(105 100% 50%),
+      hsl(90 100% 50%),
+      hsl(60 100% 50%),
+      hsl(45 100% 50%),
+      hsl(30 100% 50%),
+      hsl(15 100% 50%),
+      hsl(0 100% 50%)
+  );
+}
+
 .container--mobile-ui .color-wheel {
   transform: rotateZ(calc(var(--hue) * 1deg));
 }
@@ -85,7 +118,7 @@
   top: 50%;
   width: var(--thumb-diameter);
   height: var(--thumb-diameter);
-  background: hsl(var(--hue), calc(var(--saturation) * 1%), 50%) ;
+  background: hsl(var(--hue), calc(var(--saturation) * 1%), calc(100% - var(--saturation) * 0.5%)) ;
   width: var(--thumb-diameter);
   height: var(--thumb-diameter);
   border: 4px solid #888;
@@ -94,6 +127,11 @@
   transform: translate(-50%, -50%);
   left: calc(50% + (0.5* var(--inner-radius)) + (0.5% * var(--saturation)) - ( var(--saturation) * 0.5 * var(--inner-radius) / 100 ));
 }
+
+.container--hsl .slider {
+  background: hsl(var(--hue), calc(var(--saturation) * 1%), 50%) ;
+}
+
 
 .slider::before {
   display: block;

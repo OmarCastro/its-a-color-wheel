@@ -44,6 +44,7 @@ let loadTemplate = () => {
         uiModeObserver.observe(this)
         defaultUiModeObserver.observe(this)
         updateContainerClass(this)
+        reflectHsl(this)
 
         const getWheelCenterPoint = () => {
             const pointerBox = container.getBoundingClientRect();
@@ -151,7 +152,7 @@ let loadTemplate = () => {
     }
 
     static get observedAttributes(){
-        return ["saturation", "hue"]
+        return ["saturation", "hue", "hsl"]
     }
 
 
@@ -160,6 +161,7 @@ let loadTemplate = () => {
         switch(name){
           case "saturation": return reflectSaturation(this)
           case "hue": return reflectHue(this)
+          case "hsl": return reflectHsl(this)
         }
       }
 
@@ -203,6 +205,13 @@ let loadTemplate = () => {
   function reflectHue(element){
     if( isLoaded(element) ){
         element.shadowRoot.querySelector('.container').style.setProperty("--hue", element.hue)
+    }
+    return element
+  }
+
+  function reflectHsl(element){
+    if( isLoaded(element) ){
+        element.shadowRoot.querySelector('.container').classList.toggle("container--hsl", element.hasAttribute("hsl"))
     }
     return element
   }
