@@ -65,7 +65,9 @@ let loadTemplate = () => {
         const initDrag = (callback) => {
             const defaultPrevented = e => { e.preventDefault(); e.stopPropagation(); callback(e) } 
             globalThis.addEventListener("pointermove", defaultPrevented, {capture: true})
-            globalThis.addEventListener("pointerup", () => globalThis.removeEventListener("pointermove", defaultPrevented, {capture: true}),  { once: true, capture: true })
+            globalThis.addEventListener("pointerup", () => {
+              globalThis.removeEventListener("pointermove", defaultPrevented, {capture: true})
+            }, { once: true, capture: true })
         }
 
         const fromCenterPointAndRadius = ({ centerPoint, innerRadiusPerc, radius }) => ({
@@ -167,101 +169,75 @@ let loadTemplate = () => {
         }
       }
 
-    get uiMode(){
-        const computedStyle = getComputedStyle(this.shadowRoot.querySelector('.container'))
-        const uiMode = cleanPropertyValue(computedStyle.getPropertyValue("--ui-mode"));
-        switch(uiMode){
-            case 'desktop':
-            case 'mobile':
-                return uiMode
-        }
-        return cleanPropertyValue(computedStyle.getPropertyValue("--default-ui-mode"))
-
-}
-
-    get hue(){
-        const asInt = parseInt(this.getAttribute("hue"))
-        return isNaN(asInt) ? 0 : asInt
+  get uiMode(){
+    const computedStyle = getComputedStyle(this.shadowRoot.querySelector('.container'))
+    const uiMode = cleanPropertyValue(computedStyle.getPropertyValue("--ui-mode"));
+    switch(uiMode){
+      case 'desktop':
+      case 'mobile':
+        return uiMode
     }
-
-    set hue(hue){
-        this.setAttribute("hue", hue)
-    }
-
-    get saturation(){
-        const asInt = parseInt(this.getAttribute("saturation"))
-        return isNaN(asInt) ? 0 : asInt
-    }
-
-    set saturation(saturation){
-        this.setAttribute("saturation", saturation)
-    }
-
-    get value(){
-        const asInt = parseInt(this.getAttribute("value"))
-        return isNaN(asInt) ? 100 : asInt
-    }
-
-    set value(value){
-        this.setAttribute("value", value)
-    }
-
-    get lightness(){
-      const asInt = parseInt(this.getAttribute("lightness"))
-      return isNaN(asInt) ? 50 : asInt
-    }
-
-    set lightness(lightness){
-      this.setAttribute("lightness", lightness)
-    }
-
-
+    return cleanPropertyValue(computedStyle.getPropertyValue("--default-ui-mode"))
 
   }
 
-function isLoaded(element){
-  return element.shadowRoot.children.length > 0
+  get hue(){
+    const asInt = parseInt(this.getAttribute("hue"))
+    return isNaN(asInt) ? 0 : asInt
+  }
+
+  set hue(hue){
+    this.setAttribute("hue", hue)
+  }
+
+  get saturation(){
+    const asInt = parseInt(this.getAttribute("saturation"))
+    return isNaN(asInt) ? 0 : asInt
+  }
+
+  set saturation(saturation){
+    this.setAttribute("saturation", saturation)
+  }
+
+  get value(){
+    const asInt = parseInt(this.getAttribute("value"))
+    return isNaN(asInt) ? 100 : asInt
+  }
+
+  set value(value){
+      this.setAttribute("value", value)
+  }
+
+  get lightness(){
+    const asInt = parseInt(this.getAttribute("lightness"))
+    return isNaN(asInt) ? 50 : asInt
+  }
+
+  set lightness(lightness){
+    this.setAttribute("lightness", lightness)
+  }
+
+
+
 }
 
-function reflectHue(element){
-  if( isLoaded(element) ){
-    element.shadowRoot.querySelector('.container').style.setProperty("--hue", element.hue)
-  }
+const getContainer = element => element.shadowRoot.querySelector('.container')
+const setContainerProperty = (element, property, value) => {
+  getContainer(element)?.style.setProperty(property, value)
   return element
 }
 
 function reflectHsl(element){
-  if( isLoaded(element) ){
-    element.shadowRoot.querySelector('.container').classList.toggle("container--hsl", element.hasAttribute("lightness") && !element.hasAttribute("value"))
-  }
-  return element
+  const container = getContainer(element)
+  if(!container){ return }
+  const setHSLMode = element.hasAttribute("lightness") && !element.hasAttribute("value")
+  container.classList.toggle("container--hsl", setHSLMode)
 }
 
-function reflectLightness(element){
-  if( isLoaded(element) ){
-    reflectHsl(element)
-    element.shadowRoot.querySelector('.container').style.setProperty("--lightness", element.lightness)
-  }
-  return element
-}
-
-function reflectValue(element){
-  if( isLoaded(element) ){
-    reflectHsl(element)
-    element.shadowRoot.querySelector('.container').style.setProperty("--value", element.value)
-  }
-  return element
-}
-
-
-function reflectSaturation(element){
-  if( isLoaded(element) ){
-    const { saturation } = element
-    element.shadowRoot.querySelector('.slider').value = saturation
-    element.shadowRoot.querySelector('.container').style.setProperty("--saturation", saturation)    
-  }
-  return element
-}
+const reflectHue = element => setContainerProperty(element, "--hue", element.hue)
+const reflectSaturation = element => setContainerProperty(element, "--saturation", element.saturation)
+const reflectLightness = element => (reflectHsl(element), setContainerProperty(element, "--lightness", element.lightness))
+const reflectValue = element => (reflectHsl(element), setContainerProperty(element, "--value", element.value))
 
 const arithmetric = {
     calculateDistanceBetween2Point: ({x: x1, y: y1}, {x: x2, y: y2}) => Math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
