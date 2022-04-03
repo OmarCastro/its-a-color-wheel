@@ -44,7 +44,8 @@ let loadTemplate = () => {
         uiModeObserver.observe(this)
         defaultUiModeObserver.observe(this)
         updateContainerClass(this)
-        reflectHsl(this)
+        reflectLightness(this)
+        reflectValue(this)
 
         const getWheelCenterPoint = () => {
             const pointerBox = container.getBoundingClientRect();
@@ -152,7 +153,7 @@ let loadTemplate = () => {
     }
 
     static get observedAttributes(){
-        return ["saturation", "hue", "hsl"]
+        return ["saturation", "hue", "lightness", "value"]
     }
 
 
@@ -161,7 +162,8 @@ let loadTemplate = () => {
         switch(name){
           case "saturation": return reflectSaturation(this)
           case "hue": return reflectHue(this)
-          case "hsl": return reflectHsl(this)
+          case "lightness": return reflectLightness(this)
+          case "value": return reflectValue(this)
         }
       }
 
@@ -186,7 +188,6 @@ let loadTemplate = () => {
         this.setAttribute("hue", hue)
     }
 
-
     get saturation(){
         const asInt = parseInt(this.getAttribute("saturation"))
         return isNaN(asInt) ? 0 : asInt
@@ -196,34 +197,70 @@ let loadTemplate = () => {
         this.setAttribute("saturation", saturation)
     }
 
-  }
-
-  function isLoaded(element){
-    return element.shadowRoot.children.length > 0
-  }
-
-  function reflectHue(element){
-    if( isLoaded(element) ){
-        element.shadowRoot.querySelector('.container').style.setProperty("--hue", element.hue)
+    get value(){
+        const asInt = parseInt(this.getAttribute("value"))
+        return isNaN(asInt) ? 100 : asInt
     }
-    return element
+
+    set value(value){
+        this.setAttribute("value", value)
+    }
+
+    get lightness(){
+      const asInt = parseInt(this.getAttribute("lightness"))
+      return isNaN(asInt) ? 50 : asInt
+    }
+
+    set lightness(lightness){
+      this.setAttribute("lightness", lightness)
+    }
+
+
+
   }
 
-  function reflectHsl(element){
-    if( isLoaded(element) ){
-        element.shadowRoot.querySelector('.container').classList.toggle("container--hsl", element.hasAttribute("hsl"))
-    }
-    return element
+function isLoaded(element){
+  return element.shadowRoot.children.length > 0
+}
+
+function reflectHue(element){
+  if( isLoaded(element) ){
+    element.shadowRoot.querySelector('.container').style.setProperty("--hue", element.hue)
   }
+  return element
+}
+
+function reflectHsl(element){
+  if( isLoaded(element) ){
+    element.shadowRoot.querySelector('.container').classList.toggle("container--hsl", element.hasAttribute("lightness") && !element.hasAttribute("value"))
+  }
+  return element
+}
+
+function reflectLightness(element){
+  if( isLoaded(element) ){
+    reflectHsl(element)
+    element.shadowRoot.querySelector('.container').style.setProperty("--lightness", element.lightness)
+  }
+  return element
+}
+
+function reflectValue(element){
+  if( isLoaded(element) ){
+    reflectHsl(element)
+    element.shadowRoot.querySelector('.container').style.setProperty("--value", element.value)
+  }
+  return element
+}
 
 
-  function reflectSaturation(element){
-    if( isLoaded(element) ){
-        const { saturation } = element
-        element.shadowRoot.querySelector('.slider').value = saturation
-        element.shadowRoot.querySelector('.container').style.setProperty("--saturation", saturation)    
-    }
-    return element
+function reflectSaturation(element){
+  if( isLoaded(element) ){
+    const { saturation } = element
+    element.shadowRoot.querySelector('.slider').value = saturation
+    element.shadowRoot.querySelector('.container').style.setProperty("--saturation", saturation)    
+  }
+  return element
 }
 
 const arithmetric = {

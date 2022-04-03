@@ -3,6 +3,8 @@
     --radius: 5cm;
     --thumb-diameter: 1cm;
     --hue: 0;
+    --value: 100;
+    --lightness: 50;
     --saturation: 100;
     --default-ui-mode: "desktop"
 }
@@ -24,41 +26,44 @@
 }
 
 .container--desktop-ui {
-  --inner-radius: var(--color-wheel--inner-radius, 0%);
+  --inner-radius: var(--color-wheel--inner-radius, 0.1%);
 }
 
 
+
 .color-wheel {
+  --l-color: calc(var(--value) * 0.5%);
+  --center-l-color: calc(var(--value) * 1%);
   pointer-events: auto;
   display: inline-block;
   touch-action: none;
   min-height: calc(2 * var(--radius));
   min-width: calc(2 * var(--radius));
   border-radius: 50%;
-  background: radial-gradient(circle closest-side at center, #fff var(--inner-radius),  transparent 100%), conic-gradient(
-      hsl(360 100% 50%),
-      hsl(345 100% 50%),
-      hsl(330 100% 50%),
-      hsl(315 100% 50%),
-      hsl(300 100% 50%),
-      hsl(285 100% 50%),
-      hsl(270 100% 50%),
-      hsl(255 100% 50%),
-      hsl(240 100% 50%),
-      hsl(225 100% 50%),
-      hsl(210 100% 50%),
-      hsl(195 100% 50%),
-      hsl(180 100% 50%),
-      hsl(150 100% 50%),
-      hsl(135 100% 50%),
-      hsl(120 100% 50%),
-      hsl(105 100% 50%),
-      hsl(90 100% 50%),
-      hsl(60 100% 50%),
-      hsl(45 100% 50%),
-      hsl(30 100% 50%),
-      hsl(15 100% 50%),
-      hsl(0 100% 50%)
+  background: radial-gradient(circle closest-side at center, hsl(0 0% var(--center-l-color)) var(--inner-radius),  transparent 100%), conic-gradient(
+      hsl(360 100% var(--l-color)),
+      hsl(345 100% var(--l-color)),
+      hsl(330 100% var(--l-color)),
+      hsl(315 100% var(--l-color)),
+      hsl(300 100% var(--l-color)),
+      hsl(285 100% var(--l-color)),
+      hsl(270 100% var(--l-color)),
+      hsl(255 100% var(--l-color)),
+      hsl(240 100% var(--l-color)),
+      hsl(225 100% var(--l-color)),
+      hsl(210 100% var(--l-color)),
+      hsl(195 100% var(--l-color)),
+      hsl(180 100% var(--l-color)),
+      hsl(150 100% var(--l-color)),
+      hsl(135 100% var(--l-color)),
+      hsl(120 100% var(--l-color)),
+      hsl(105 100% var(--l-color)),
+      hsl(90 100% var(--l-color)),
+      hsl(60 100% var(--l-color)),
+      hsl(45 100% var(--l-color)),
+      hsl(30 100% var(--l-color)),
+      hsl(15 100% var(--l-color)),
+      hsl(0 100% var(--l-color))
   );
 
   /* calcs for antialiasing */
@@ -69,31 +74,8 @@
 }
 
 .container--hsl .color-wheel {
-  background: radial-gradient(circle closest-side at center, hsl(0 0% 50%) var(--inner-radius),  transparent 100%), conic-gradient(
-      hsl(360 100% 50%),
-      hsl(345 100% 50%),
-      hsl(330 100% 50%),
-      hsl(315 100% 50%),
-      hsl(300 100% 50%),
-      hsl(285 100% 50%),
-      hsl(270 100% 50%),
-      hsl(255 100% 50%),
-      hsl(240 100% 50%),
-      hsl(225 100% 50%),
-      hsl(210 100% 50%),
-      hsl(195 100% 50%),
-      hsl(180 100% 50%),
-      hsl(150 100% 50%),
-      hsl(135 100% 50%),
-      hsl(120 100% 50%),
-      hsl(105 100% 50%),
-      hsl(90 100% 50%),
-      hsl(60 100% 50%),
-      hsl(45 100% 50%),
-      hsl(30 100% 50%),
-      hsl(15 100% 50%),
-      hsl(0 100% 50%)
-  );
+  --l-color: calc(var(--lightness) * 1%);
+  --center-l-color: calc(var(--lightness) * 1%);
 }
 
 .container--mobile-ui .color-wheel {
@@ -118,7 +100,7 @@
   top: 50%;
   width: var(--thumb-diameter);
   height: var(--thumb-diameter);
-  background: hsl(var(--hue), calc(var(--saturation) * 1%), calc(100% - var(--saturation) * 0.5%)) ;
+  background: hsl(var(--hue), calc(var(--saturation) * 1%), calc((100% - var(--saturation) * 0.5%) * var(--value) / 100));
   width: var(--thumb-diameter);
   height: var(--thumb-diameter);
   border: 4px solid #888;
@@ -129,7 +111,7 @@
 }
 
 .container--hsl .slider {
-  background: hsl(var(--hue), calc(var(--saturation) * 1%), 50%) ;
+  background: hsl(var(--hue), calc(var(--saturation) * 1%), calc(var(--lightness, 50) * 1%)) ;
 }
 
 
