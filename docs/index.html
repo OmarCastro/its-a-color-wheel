@@ -5,12 +5,13 @@
         <meta name="description" content="documentation of it's a color wheel component">
         <meta name="keywords" content="color wheel webcomponents">
         <link rel="stylesheet" href="doc.css">
-        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/styles/base16/dracula.min.css" integrity="sha512-zKpFlhUX8c+WC6H/XTJavnEpWFt2zH9BU9vu0Hry5Y+SEgG21pRMFcecS7DgDXIegXBQ3uK9puwWPP3h6WSR9g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.27.0/themes/prism.min.css" integrity="sha512-tN7Ec6zAFaVSG3TpNAKtk4DOHNpSwKHxxrsiw4GHKESGPs5njn/0sMCUMl2svV4wo4BK/rCP7juYz+zx+l6oeQ==" crossorigin="anonymous" referrerpolicy="no-referrer" />
         <script type="module" src="../src/color-wheel.element.js?named=color-wheel"></script>
         <script type="module" src="doc.js"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/highlight.min.js" defer integrity="sha512-BNc7saQYlxCL10lykUYhFBcnzdKMnjx5fp5s5wPucDyZ7rKNwCoqJh1GwEAIhuePEK4WM9askJBRsu7ma0Rzvg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/languages/css.min.js" defer integrity="sha512-SD06mVimKXJwNGnT3eDxfzVCOKsRXV7/IKSEhB3XmjJ7eN0saLzrW/As/9QmqljUJxa/+il3DWJz7cR7VupJDQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.5.0/languages/xml.min.js" defer integrity="sha512-+bb1+kzXMhHsUlA+lQfd4nSdOlgxtCvUYY5Q31pd4kloJ1fuzaplaepw+k8uGPyjO3ZzKCYe8NsTuVl29IG4wg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.27.0/prism.min.js" defer integrity="sha512-/Swpp6aCQ0smuZ+zpklJqMClcUlvxhpLf9aAcM7JjJrj2waCU4dikm3biOtMVAflOOeniW9qzaNXNrbOAOWFCw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.27.0/plugins/autoloader/prism-autoloader.min.js" defer integrity="sha512-GP4x8UWxWyh4BMbyJGOGneiTbkrWEF5izsVJByzVLodP8CuJH/n936+yQDMJJrOPUHLgyPbLiGw2rXmdvGdXHA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.27.0/plugins/keep-markup/prism-keep-markup.min.js" defer integrity="sha512-WFQf+1dW2XxMKmEZ5liZldcuBll+mfbMf1DkBlimHPvxyaJB1mhqyDkLdvHxJ7+OAhhdPw9AS+MdBUoRG8xhFw==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+   
     </head>
     
     <body>
@@ -32,6 +33,10 @@
 
         <section>
             <h2> Getting started </h2>
+
+            <pre><code class="language-markup">
+                &lt;script type="module" src="../src/color-wheel.element.js?named=<span class="component-name-edit" contenteditable="true">color-wheel</span>">&lt;/script>
+            </code></pre>
         </section>
 
         <section>
@@ -44,13 +49,14 @@
             <color-wheel class="ui-mode--mobile"></color-wheel>
 
             
-            <pre><code class="language-xml">
-                &lt;color-wheel class="ui-mode--mobile">&lt;/color-wheel>
+            <pre><code class="language-markup">
+                &lt;<span class="component-name-ref">color-wheel</span> class="ui-mode--mobile">&lt;/<span class="component-name-ref">color-wheel</span>>
             </code></pre>
 
             <pre><code class="language-css">
-                .ui-mode--mobile{
-                    --ui-mode: "mobile" 
+                .ui-mode--mobile
+                {
+                    --ui-mode: "<span class="ui-mode-edit" contenteditable="true">mobile</span>" 
                 }
             </code></pre>
             <h4> Desktop mode </h4>
@@ -63,8 +69,8 @@
             <color-wheel lightness="50"></color-wheel>
 
             
-            <pre><code class="language-xml">
-                &lt;color-wheel class="ui-mode--mobile" lightness="50">&lt;/color-wheel>
+            <pre><code class="language-markup">
+                &lt;<span class="component-name-ref">color-wheel</span> class="ui-mode--mobile" lightness="50">&lt;/<span class="component-name-ref">color-wheel</span>>
             </code></pre>
 
             <pre><code class="language-css">

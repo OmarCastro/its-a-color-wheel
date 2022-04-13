@@ -4,6 +4,12 @@ document.addEventListener("DOMContentLoaded", function () {
         const lines = html.split("\n")
         const minSpaces = lines.filter(line => line.trim() !== "").reduce((acc, line) => Math.min(line.search(/\S|$/), acc), Infinity)
         el.innerHTML = lines.map(line => line.substring(minSpaces)).join("\n").trim()
-        hljs.highlightElement(el);
       });
 });
+
+document.body.addEventListener("input", (event) => {
+  const componentName = event.target.closest(".component-name-edit")
+  if(componentName == null){ return }
+  const newText = componentName.textContent
+  document.body.querySelectorAll(".component-name-ref").forEach(ref => ref.textContent = newText)
+})
