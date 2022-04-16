@@ -46,19 +46,28 @@
 
             <h4> Mobile mode </h4>
 
-            <color-wheel class="ui-mode--mobile"></color-wheel>
+            <div class="example">
+                <div class="example__view">
+                    <color-wheel class="ui-mode--mobile"></color-wheel>
+                </div>
+                <div class="example__html">
+                    <script type="text/plain" class="html-example">
+                        <{{elementName}} class="ui-mode--mobile"></{{elementName}}>
+                    </script>
+        
+                    </div>
+                <div class="example__css">
+                    <script type="text/plain" class="css-example">
+                        .ui-mode--mobile
+                        {
+                            --ui-mode: "{{mobile:ui-mode}}" 
+                        }
+                    </script>
+                </div>
+            </div>
 
-            
-            <pre><code class="language-markup">
-                &lt;<span class="component-name-ref">color-wheel</span> class="ui-mode--mobile">&lt;/<span class="component-name-ref">color-wheel</span>>
-            </code></pre>
 
-            <pre><code class="language-css">
-                .ui-mode--mobile
-                {
-                    --ui-mode: "<span class="ui-mode-edit" contenteditable="true">mobile</span>" 
-                }
-            </code></pre>
+
             <h4> Desktop mode </h4>
 
 
