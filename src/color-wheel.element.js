@@ -2,17 +2,30 @@ import {shadowDomCustomCssVariableObserver, cleanPropertyValue} from './observe-
 
 const url = new URL(import.meta.url)
 
+
 let loadTemplate = () => {
-    const cssPromise = fetch(new URL("./color-wheel.element.css", url)).then(response => response.text())
-    const htmlPromise = fetch(new URL("./color-wheel.element.html", url)).then(response => response.text())
-    const templatePromise = Promise.all([cssPromise, htmlPromise]).then(([css, html]) => {
-      const templateElement = document.createElement("template")
-      templateElement.innerHTML = `${css ? `<style>${css}</style>` : ''}${html}`
-      return templateElement
-    })
-    loadTemplate = () => templatePromise
-    return templatePromise
-  }
+  const templatePromise = fetch(new URL("./color-wheel.element.html", url))
+    .then(response => response.text())
+    .then((html) => {
+    const templateElement = document.createElement("template")
+    templateElement.innerHTML = html
+    return templateElement
+  })
+  loadTemplate = () => templatePromise
+  return templatePromise
+}
+
+let loadStyles = () => {
+  const stylesPromise = fetch(new URL("./color-wheel.element.css", url))
+    .then(response => response.text())
+    .then((css) => {
+      const sheet = new CSSStyleSheet();
+      sheet.replaceSync(css);
+      return sheet
+  })
+  loadStyles = () => stylesPromise
+  return stylesPromise
+}
   
 
   /**
@@ -33,12 +46,16 @@ let loadTemplate = () => {
   class ColorWheelElement extends HTMLElement {
     constructor(){
       super()
-      this.attachShadow({ mode: 'open' })
+      const shadowRoot = this.attachShadow({ mode: 'open' })
+      loadStyles().then((sheet) => {
+        shadowRoot.adoptedStyleSheets = [sheet];
+      })
+
       loadTemplate().then((template) => {
-        this.shadowRoot.append(document.importNode(template.content, true))
-        const container = this.shadowRoot.querySelector('.container')
-        const wheel = this.shadowRoot.querySelector('.color-wheel')
-        const slider = this.shadowRoot.querySelector('.slider')
+        shadowRoot.append(document.importNode(template.content, true))
+        const container = shadowRoot.querySelector('.container')
+        const wheel = shadowRoot.querySelector('.color-wheel')
+        const slider = shadowRoot.querySelector('.slider')
         const wheelStyle = window.getComputedStyle(wheel)
         
         uiModeObserver.observe(this)
