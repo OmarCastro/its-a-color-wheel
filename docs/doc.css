@@ -6,7 +6,7 @@
     --ui-mode: "desktop"
 }
 
-.inner-radius--none {
+.inner-radius--custom {
     --color-wheel--inner-radius: 30%;
 }
 

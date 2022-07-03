@@ -46,7 +46,7 @@
 
             <h4> Mobile mode </h4>
 
-            <div class="example">
+            <div class="example example--mobile-mode">
                 <div class="example__view">
                     <color-wheel class="ui-mode--mobile"></color-wheel>
                 </div>
@@ -70,28 +70,76 @@
 
             <h4> Desktop mode </h4>
 
+            <div class="example example--desktop-mode">
+                <div class="example__view">
+                    <color-wheel class="ui-mode--desktop"></color-wheel>
+                </div>
+                <div class="example__html">
+                    <script type="text/plain" class="html-example">
+                        <{{elementName}} class="ui-mode--desktop"></{{elementName}}>
+                    </script>
+        
+                    </div>
+                <div class="example__css">
+                    <script type="text/plain" class="css-example">
+                        .ui-mode--desktop
+                        {
+                            --ui-mode: "{{desktop:ui-mode}}" 
+                        }
+                    </script>
+                </div>
+            </div>
 
-            <color-wheel class="ui-mode--desktop"></color-wheel>
 
             <h4> HSL </h4>
 
-            <color-wheel lightness="50"></color-wheel>
+            <div class="example example--hsl">
+                <div class="example__view">
+                    <color-wheel lightness="50"></color-wheel>
+                </div>
+                <div class="example__html">
+                    <script type="text/plain" class="html-example">
+                        <{{elementName}} lightness="{{50:lightness}}"></{{elementName}}>
+                    </script>
+        
+                    </div>
+            </div>
+
+            <h4> HSV </h4>
+
+            <div class="example example--hsv">
+                <div class="example__view">
+                    <color-wheel value="100"></color-wheel>
+                </div>
+                <div class="example__html">
+                    <script type="text/plain" class="html-example">
+                        <{{elementName}} value="{{100:value}}"></{{elementName}}>
+                    </script>
+        
+                    </div>
+            </div>
 
             
-            <pre><code class="language-markup">
-                &lt;<span class="component-name-ref">color-wheel</span> class="ui-mode--mobile" lightness="50">&lt;/<span class="component-name-ref">color-wheel</span>>
-            </code></pre>
-
-            <pre><code class="language-css">
-                .ui-mode--mobile{
-                    --ui-mode: "mobile" 
-                }
-            </code></pre>
 
             <h4> custom inner radius </h4>
 
-            <color-wheel class="inner-radius--none"></color-wheel>
-
+            <div class="example example--hsv">
+                <div class="example__view">
+                    <color-wheel class="inner-radius--custom"></color-wheel>
+                </div>
+                <div class="example__html">
+                    <script type="text/plain" class="html-example">
+                        <{{elementName}} class="inner-radius--custom"></{{elementName}}>
+                    </script>
+                </div>
+                <div class="example__css">
+                    <script type="text/plain" class="css-example">
+                        .inner-radius--custom {
+                            --color-wheel--inner-radius: {{30:inner-radius}}%;
+                        }
+                        </script>
+                </div>
+            </div>
 
         </section>
     </body>
