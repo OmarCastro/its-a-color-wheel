@@ -61,7 +61,7 @@ const reactValueChange = (event: Event) => {
 
 
 document.body.addEventListener("input", (event) => {
-  reactElementNameChange(event) || reactUIModeChange(event) || reactLightnessChange(event) || reactValueChange(event)
+  reactElementNameChange(event) || reactUIModeChange(event) || reactLightnessChange(event) || reactValueChange(event) || reactInnerRadiusChange(event)
 })
 
 
