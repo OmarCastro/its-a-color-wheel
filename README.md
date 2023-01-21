@@ -3,4 +3,4 @@
 
 Project currently in development
 
-documentation: https://omarcastro.github.io/its-a-color-wheel/docs/
+documentation: https://omarcastro.github.io/its-a-color-wheel
