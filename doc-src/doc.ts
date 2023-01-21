@@ -1,6 +1,7 @@
 import dedent from './dedent.util.ts';
 import 'https://esm.sh/v103/prismjs@1.29.0'
-import '../src/color-wheel.element.js?named=color-wheel'
+import 'https://esm.sh/v103/prismjs@1.29.0'
+import 'https://esm.sh/prismjs@1.29.0/plugins/keep-markup/prism-keep-markup.js';
 
 document.addEventListener("DOMContentLoaded", function () {
     document.querySelectorAll('pre code').forEach((el) => {
