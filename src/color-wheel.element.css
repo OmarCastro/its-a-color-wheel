@@ -23,9 +23,8 @@
 .container {
     position: relative;
     display: inline-block;
-    overflow: clip;
-    overflow-clip-margin: calc(var(--thumb-radius) + 6px);
-    margin: calc(var(--thumb-radius) + 6px);
+    overflow: hidden;
+    padding: calc(var(--thumb-radius) + 6px);
 }
 
 .container--desktop-ui {
@@ -88,8 +87,8 @@
 .slider-container{
   pointer-events: none;
   position: absolute;
-  top: 0;
-  left: 0;
+  top: calc(var(--thumb-radius) + 6px);
+  left: calc(var(--thumb-radius) + 6px);
   min-height: calc(2 * var(--radius));
   min-width: calc(2 * var(--radius));
   transform: rotateZ(calc(var(--hue) * -1deg - 90deg));
