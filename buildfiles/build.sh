@@ -1,6 +1,13 @@
+#!/usr/bin/env bash
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+cd "$SCRIPT_DIR"/..
+
+# clean
+rm -rf build
 
 # build doumentation
-deno bundle --config deno.jsonc doc-src/doc.ts > docs/doc.js
-cp doc-src/doc.css docs/doc.css
-rm -r docs/src
-cp -r src docs/src
+mkdir -p build/docs
+deno bundle --config deno.jsonc docs/doc.ts > build/docs/doc.js
+cp docs/doc.css build/docs/doc.css
+cp docs/index.html build/docs/index.html
+cp -r src build/docs/src
