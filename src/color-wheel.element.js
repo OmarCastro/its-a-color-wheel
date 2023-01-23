@@ -65,7 +65,7 @@ let loadStyles = () => {
         reflectValue(this)
 
         const getWheelCenterPoint = () => {
-            const pointerBox = container.getBoundingClientRect();
+            const pointerBox = wheel.getBoundingClientRect();
             const centerPoint = wheelStyle.transformOrigin;
             const centers = centerPoint.split(" ");
             const centerY = pointerBox.top + parseInt(centers[1]);
@@ -141,7 +141,6 @@ let loadStyles = () => {
                 initDrag(rotateWheel)
                 
             } else {
-                const { innerRadiusPerc, radius } = getRadiusValues()
                 const rotateSlider = (e) => {
                     const deg = getAngle(e) 
                     const newHue = Math.round(-deg + 360 * 2 - 90) % 360
