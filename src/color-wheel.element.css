@@ -1,7 +1,7 @@
 :host {
     --inner-radius: var(--color-wheel--inner-radius, 60%);
     --radius: 5cm;
-    --thumb-radius: 0.5cm;
+    --thumb-radius: var(--color-wheel-thumb-radius-mobile, var(--color-wheel-thumb-radius, 0.6cm));
     --hue: 0;
     --value: 100;
     --lightness: 50;
@@ -29,6 +29,7 @@
 
 .container--desktop-ui {
   --inner-radius: var(--color-wheel--inner-radius, 0.1%);
+  --thumb-radius: var(--color-wheel-thumb-radius-desktop, var(--color-wheel-thumb-radius, 0.5cm));
 }
 
 
