@@ -4,6 +4,7 @@
     align-items: center;
     --inner-radius: var(--color-wheel--inner-radius, 60%);
     --radius: 5cm;
+    min-height: calc(2 * var(--radius) + 2*  var(--thumb-radius) + 12px);
     --thumb-radius: var(--color-wheel-thumb-radius-mobile, var(--color-wheel-thumb-radius, 0.6cm));
     --hue: 0;
     --value: 100;
@@ -96,11 +97,15 @@
 .slider-container{
   pointer-events: none;
   position: absolute;
-  top: calc(var(--thumb-radius) + 6px);
-  left: calc(var(--thumb-radius) + 6px);
+  aspect-ratio: 1 / 1;
+  height: 100%;
+  max-width: calc(100% - 6px - 2 * var(--thumb-radius));
+  max-height: calc(100% - 6px - 2 * var(--thumb-radius));
+  top: 50%;
+  left: 50%;
   min-height: calc(2 * var(--radius));
   min-width: calc(2 * var(--radius));
-  transform: rotateZ(calc(var(--hue) * -1deg - 90deg));
+  transform: translate(-50%, -50%) rotateZ(calc(var(--hue) * -1deg - 90deg));
 
 }
 
@@ -141,7 +146,7 @@
 
 
 .container--mobile-ui .slider-container{
-  transform: rotate(-90deg);
+  transform: translate(-50%, -50%) rotate(-90deg);
 }
 
 .container--mobile-ui .slider{
