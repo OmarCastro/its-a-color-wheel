@@ -1,4 +1,7 @@
 :host {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
     --inner-radius: var(--color-wheel--inner-radius, 60%);
     --radius: 5cm;
     --thumb-radius: var(--color-wheel-thumb-radius-mobile, var(--color-wheel-thumb-radius, 0.6cm));
