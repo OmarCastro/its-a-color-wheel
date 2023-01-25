@@ -75,7 +75,7 @@ let loadStyles = () => {
 
         const getRadiusValues = () => {
             const innerRadiusPerc = parseInt(wheelStyle.getPropertyValue("--inner-radius"))
-            const radius = parseInt(wheelStyle.width) / 2
+            const radius = Math.min(parseInt(wheelStyle.width), parseInt(wheelStyle.height)) / 2
             return { innerRadiusPerc, radius }
         }
 
