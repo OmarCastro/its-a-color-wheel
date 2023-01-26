@@ -53,7 +53,7 @@ let loadStyles = () => {
 
       loadTemplate().then((template) => {
         shadowRoot.append(document.importNode(template.content, true))
-        const container = shadowRoot.querySelector('.container')
+        const wheelContainer = shadowRoot.querySelector('.color-wheel-container')
         const wheel = shadowRoot.querySelector('.color-wheel')
         const slider = shadowRoot.querySelector('.slider')
         const wheelStyle = window.getComputedStyle(wheel)
@@ -65,7 +65,7 @@ let loadStyles = () => {
         reflectValue(this)
 
         const getWheelCenterPoint = () => {
-            const pointerBox = wheel.getBoundingClientRect();
+            const pointerBox = wheelContainer.getBoundingClientRect();
             const centerPoint = wheelStyle.transformOrigin;
             const centers = centerPoint.split(" ");
             const centerY = pointerBox.top + parseInt(centers[1]);
@@ -75,7 +75,8 @@ let loadStyles = () => {
 
         const getRadiusValues = () => {
             const innerRadiusPerc = parseInt(wheelStyle.getPropertyValue("--inner-radius"))
-            const radius = Math.min(parseInt(wheelStyle.width), parseInt(wheelStyle.height)) / 2
+            const pointerBox = wheelContainer.getBoundingClientRect();
+            const radius = Math.min(pointerBox.width, pointerBox.height) / 2
             return { innerRadiusPerc, radius }
         }
 
@@ -99,13 +100,17 @@ let loadStyles = () => {
         })
 
         const initSliderDrag = () => {
+            const centerPoint = getWheelCenterPoint()
             const calculations = fromCenterPointAndRadius({
                 ...getRadiusValues(),
-                centerPoint: getWheelCenterPoint()
+                centerPoint
             })
 
             const slideSaturation = (e) => {
-                this.saturation = calculations.calculateSaturationFromMouseEvent(e)
+                this.saturation = calculations.calculateSaturationFromMouseEvent({
+                  clientX: centerPoint.x,
+                  clientY: Math.min(centerPoint.y, e.clientY)
+                })
                 const event = new CustomEvent("input", { bubbles: true })
                 this.dispatchEvent(event)
             }
