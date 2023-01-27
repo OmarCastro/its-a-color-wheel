@@ -54,10 +54,11 @@ let loadStyles = () => {
       loadTemplate().then((template) => {
         shadowRoot.append(document.importNode(template.content, true))
         const wheelContainer = shadowRoot.querySelector('.color-wheel-container')
+        const innerRadiusCalc = shadowRoot.querySelector('.inner-radius-calc')
         const wheel = shadowRoot.querySelector('.color-wheel')
         const slider = shadowRoot.querySelector('.slider')
         const wheelStyle = window.getComputedStyle(wheel)
-        
+             
         uiModeObserver.observe(this)
         defaultUiModeObserver.observe(this)
         updateContainerClass(this)
@@ -74,10 +75,17 @@ let loadStyles = () => {
         }
 
         const getRadiusValues = () => {
-            const innerRadiusPerc = parseInt(wheelStyle.getPropertyValue("--inner-radius"))
-            const pointerBox = wheelContainer.getBoundingClientRect();
-            const radius = Math.min(pointerBox.width, pointerBox.height) / 2
-            return { innerRadiusPerc, radius }
+          const pointerBox = wheelContainer.getBoundingClientRect();
+          const radius = Math.min(pointerBox.width, pointerBox.height) / 2
+            const innerRadiusCSSValue = wheelStyle.getPropertyValue("--inner-radius").trim()
+            if(/[0-9]+%/g.test(innerRadiusCSSValue)){
+              const innerRadiusPerc = parseInt(innerRadiusCSSValue)
+              const innerRadius = (innerRadiusPerc * 0.01) * radius
+              return { innerRadiusPerc, radius, innerRadius }
+            } 
+            const innerRadius = innerRadiusCalc.getBoundingClientRect().width
+            const innerRadiusPerc = innerRadius * 100 / radius
+            return { innerRadiusPerc, radius, innerRadius }
         }
 
         const initDrag = (callback) => {

@@ -113,6 +113,11 @@
 
 }
 
+.slider-container-half {
+  position: absolute;
+  inset: 0 0 0 50%;
+}
+
 .slider {
   pointer-events: none;
   touch-action: none;
@@ -125,11 +130,20 @@
   border-radius: 50%;
   cursor: pointer;
   transform: translate(-50%, -50%);
-  left: calc(50% + (0.5* var(--inner-radius)) + (0.5% * var(--saturation)) - ( var(--saturation) * 0.5 * var(--inner-radius) / 100 ));
+  left: calc(var(--inner-radius) + (1% * var(--saturation)) - ( var(--saturation) * var(--inner-radius) / 100 ));
 }
 
 .container--hsl .slider {
   background: hsl(var(--hue), calc(var(--saturation) * 1%), calc(var(--lightness, 50) * 1%)) ;
+}
+
+.inner-radius-calc {
+  visibility: position;
+  z-index: -1;
+  height: 1px;
+  pointer-events: none;
+  touch-action: none;
+  width: var(--inner-radius);
 }
 
 
