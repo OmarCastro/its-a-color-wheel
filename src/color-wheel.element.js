@@ -1,3 +1,4 @@
+import { calculateDistanceBetween2Points } from './geometry.js'
 import {shadowDomCustomCssVariableObserver, cleanPropertyValue} from './observe-css-var.feature.js'
 
 const url = new URL(import.meta.url)
@@ -97,11 +98,10 @@ let loadStyles = () => {
         }
 
         const fromCenterPointAndRadius = ({ centerPoint, innerRadiusPerc, radius }) => ({
-            calculateDistanceFromMouseEvent(event) {
-                return arithmetric.calculateDistanceBetween2Point(centerPoint,  { x: event.clientX, y: event.clientY })
-            },
+            calculateDistanceFromMouseEvent: (event) => calculateDistanceBetween2Points(centerPoint,  { x: event.clientX, y: event.clientY })
+            ,
             calculateSaturationFromMouseEvent(event) {
-                const r = this.calculateDistanceFromMouseEvent(event)
+                const r = this.calculateDistanceBetween2Points(centerPoint,  { x: event.clientX, y: event.clientY })
                 const rperc = Math.min(100, Math.max(0, r * 100 / radius))
                 return Math.round(Math.min(100, Math.max(0, (rperc - innerRadiusPerc) * 100 / (100 - innerRadiusPerc))))
             }
@@ -245,9 +245,6 @@ let loadStyles = () => {
   set lightness(lightness){
     this.setAttribute("lightness", lightness)
   }
-
-
-
 }
 
 const getContainer = element => element.shadowRoot.querySelector('.container')
@@ -268,9 +265,6 @@ const reflectSaturation = element => setContainerProperty(element, "--saturation
 const reflectLightness = element => (reflectHsl(element), setContainerProperty(element, "--lightness", element.lightness))
 const reflectValue = element => (reflectHsl(element), setContainerProperty(element, "--value", element.value))
 
-const arithmetric = {
-    calculateDistanceBetween2Point: ({x: x1, y: y1}, {x: x2, y: y2}) => Math.sqrt((x2 - x1)**2 + (y2 - y1)**2)
-}
   
 const elementName = url.searchParams.get('named')
 if(elementName){
