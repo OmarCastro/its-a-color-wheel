@@ -4,6 +4,14 @@ build
 # node_modules
 node_modules
 
+# test results
+/test-results/
+/playwright-report/
+/playwright/.cache/
+
+# code coverage
+.nyc_output
+
 ### VisualStudioCode ###
 # VisualStudioCode settings
 .vscode
