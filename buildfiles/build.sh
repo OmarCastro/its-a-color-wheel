@@ -14,4 +14,4 @@ npx esbuild src/color-wheel.element.js --bundle --outfile=build/docs/color-wheel
 npx esbuild src/color-wheel.element.js --bundle --minify --sourcemap --outfile=build/docs/color-wheel.element.min.js \
     --format=esm --target=es2020 --loader:.element.html=text --loader:.element.css=text
 npx esbuild docs/doc.css --bundle --minify --sourcemap --outfile=build/docs/doc.css
-deno run --allow-read --allow-write=build buildfiles/build-html.ts
+node buildfiles/build-html.mjs
