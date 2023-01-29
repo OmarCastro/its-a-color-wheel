@@ -95,10 +95,8 @@ let loadStyles = () => {
         }
 
         const fromCenterPointAndRadius = ({ centerPoint, innerRadiusPerc, radius }) => ({
-            calculateDistanceFromMouseEvent: (event) => calculateDistanceBetween2Points(centerPoint,  { x: event.clientX, y: event.clientY })
-            ,
             calculateSaturationFromMouseEvent(event) {
-                const r = this.calculateDistanceBetween2Points(centerPoint,  { x: event.clientX, y: event.clientY })
+                const r = calculateDistanceBetween2Points(centerPoint,  { x: event.clientX, y: event.clientY })
                 const rperc = Math.min(100, Math.max(0, r * 100 / radius))
                 return Math.round(Math.min(100, Math.max(0, (rperc - innerRadiusPerc) * 100 / (100 - innerRadiusPerc))))
             }
