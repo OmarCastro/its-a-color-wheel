@@ -28,6 +28,8 @@
     "esbuild": "0.17.5"
   },
   "devDependencies": {
+    "html-minifier": "^4.0.0",
+    "jsdom": "^21.1.0",
     "prismjs": "^1.29.0"
   }
 }
