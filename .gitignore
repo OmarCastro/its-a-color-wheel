@@ -1,6 +1,9 @@
 # Build target
 build
 
+# node_modules
+node_modules
+
 ### VisualStudioCode ###
 # VisualStudioCode settings
 .vscode
