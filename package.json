@@ -1,0 +1,27 @@
+{
+  "name": "its-a-color-wheel",
+  "version": "0.3.0",
+  "description": "It's a color wheel",
+  "main": "dist/index.js",
+  "directories": {
+    "doc": "docs",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OmarCastro/its-a-color-wheel.git"
+  },
+  "keywords": [
+    "color-picker",
+    "color-wheel"
+  ],
+  "author": "Omar Castro",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/OmarCastro/its-a-color-wheel/issues"
+  },
+  "homepage": "https://github.com/OmarCastro/its-a-color-wheel#readme"
+}
