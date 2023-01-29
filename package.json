@@ -23,5 +23,8 @@
   "bugs": {
     "url": "https://github.com/OmarCastro/its-a-color-wheel/issues"
   },
-  "homepage": "https://github.com/OmarCastro/its-a-color-wheel#readme"
+  "homepage": "https://github.com/OmarCastro/its-a-color-wheel#readme",
+  "dependencies": {
+    "esbuild": "0.17.5"
+  }
 }
