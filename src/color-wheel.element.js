@@ -1,4 +1,4 @@
-import { calculateDistanceBetween2Points } from './geometry.js'
+import { calculateDistanceBetween2Points, CircleInfo } from './geometry.js'
 import {shadowDomCustomCssVariableObserver, cleanPropertyValue} from './observe-css-var.feature.js'
 
 const url = new URL(import.meta.url)
@@ -77,16 +77,13 @@ let loadStyles = () => {
 
         const getRadiusValues = () => {
           const pointerBox = wheelContainer.getBoundingClientRect();
-          const radius = Math.min(pointerBox.width, pointerBox.height) / 2
             const innerRadiusCSSValue = wheelStyle.getPropertyValue("--inner-radius").trim()
             if(/[0-9]+%/g.test(innerRadiusCSSValue)){
               const innerRadiusPerc = parseInt(innerRadiusCSSValue)
-              const innerRadius = (innerRadiusPerc * 0.01) * radius
-              return { innerRadiusPerc, radius, innerRadius }
-            } 
+              return CircleInfo.fromRectWithPercentInnerRadius(pointerBox, innerRadiusPerc)
+            }
             const innerRadius = innerRadiusCalc.getBoundingClientRect().width
-            const innerRadiusPerc = innerRadius * 100 / radius
-            return { innerRadiusPerc, radius, innerRadius }
+            return CircleInfo.fromRectWithInnerRadius(pointerBox, innerRadius)
         }
 
         const initDrag = (callback) => {
