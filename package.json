@@ -26,5 +26,8 @@
   "homepage": "https://github.com/OmarCastro/its-a-color-wheel#readme",
   "dependencies": {
     "esbuild": "0.17.5"
+  },
+  "devDependencies": {
+    "prismjs": "^1.29.0"
   }
 }
