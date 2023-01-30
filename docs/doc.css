@@ -1,7 +1,23 @@
-@import url(./prism-a11y-dark.css);
+@import url(./code-example.css);
 
+
+html {
+    --bg-color: #dddcdf;
+    --fg-color: #303540;
+    --resizable-border-color: #303540;
+}
+
+@media (prefers-color-scheme: dark) {
+    html {
+        --bg-color: #303540;
+        --fg-color: #dddcdf;
+        --resizable-border-color: #dddcdf;
+    }
+}
+  
 body {
-    background-color: #eee;
+    background-color: var(--bg-color);
+    color: var(--fg-color);
 }
 
 h1 {
@@ -20,7 +36,7 @@ label:has(.checkbox--ui-mode:checked) + .resizable {
 .resizable {
     display: block;
     position: relative;
-    border: solid #000 2px;
+    border: solid var(--resizable-border-color) 2px;
     resize: both;
     overflow:hidden;
     min-width: fit-content;
@@ -75,4 +91,10 @@ span[contenteditable="true"]::before {
 
 pre:hover code span[contenteditable="true"]::before {
     opacity: 1;
+}
+
+color-wheel:not(:defined) {
+    display: inline-block;
+    width: calc(11.2cm + 12px);
+    height: calc(11.2cm + 12px);
 }
