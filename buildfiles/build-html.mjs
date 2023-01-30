@@ -4,10 +4,11 @@ import {minify} from 'html-minifier'
 //import { minifyHTML } from "https://deno.land/x/minifier/mod.ts";
 
 const projectPath = new URL('../',import.meta.url).pathname;
+const docsPath = new URL('../docs',import.meta.url).pathname;
 
 const fs = await import('fs')
 
-const data = fs.readFileSync(`${projectPath}/docs/index.html`, 'utf8');
+const data = fs.readFileSync(`${docsPath}/index.html`, 'utf8');
 const jsdom = await import("jsdom");
 const dom = new jsdom.JSDOM(data);
 globalThis.window = dom.window
@@ -38,7 +39,7 @@ const exampleCode =  (strings, ...expr) => {
 }
 
 
-const queryAll = (selector) => [...document.body.querySelectorAll(selector)]
+const queryAll = (selector) => [...document.documentElement.querySelectorAll(selector)]
 
 queryAll("script.html-example").forEach(element => {
   const pre = document.createElement("pre")
@@ -58,8 +59,14 @@ queryAll("code").forEach(element => {
 
 queryAll("svg[ss:include]").forEach(element => {
   const ssInclude = element.getAttribute("ss:include")
-  const svgText = fs.readFileSync(`${projectPath}/${ssInclude}`, 'utf8');
+  const svgText = fs.readFileSync(`${docsPath}/${ssInclude}`, 'utf8');
   element.outerHTML = svgText
+})
+
+queryAll('link[href][rel="stylesheet"][ss:inline]').forEach(element => {
+  const ssInclude = element.getAttribute("href")
+  const cssText = fs.readFileSync(`${docsPath}/${ssInclude}`, 'utf8');
+  element.outerHTML = `<style>${cssText}</style>`
 })
 
 const minifiedHtml = minify("<!DOCTYPE html>" + document.documentElement?.outerHTML || "", {
