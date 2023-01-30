@@ -38,9 +38,6 @@ const exampleCode =  (strings, ...expr) => {
 }
 
 
-document.createR
-
-
 const queryAll = (selector) => [...document.body.querySelectorAll(selector)]
 
 queryAll("script.html-example").forEach(element => {
@@ -59,14 +56,17 @@ queryAll("code").forEach(element => {
   Prism.highlightElement(element, false)
 })
 
+queryAll("svg[ss:include]").forEach(element => {
+  const ssInclude = element.getAttribute("ss:include")
+  const svgText = fs.readFileSync(`${projectPath}/${ssInclude}`, 'utf8');
+  element.outerHTML = svgText
+})
+
 const minifiedHtml = minify("<!DOCTYPE html>" + document.documentElement?.outerHTML || "", {
   removeAttributeQuotes: true,
   useShortDoctype: true,
   collapseWhitespace: true
 })
-
-console.log(minifiedHtml)
-
 
 fs.writeFileSync(`${projectPath}/build/docs/index.html`, minifiedHtml);
 
