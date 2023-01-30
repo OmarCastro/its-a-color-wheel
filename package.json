@@ -7,9 +7,7 @@
     "doc": "docs",
     "test": "test"
   },
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/OmarCastro/its-a-color-wheel.git"
@@ -24,12 +22,13 @@
     "url": "https://github.com/OmarCastro/its-a-color-wheel/issues"
   },
   "homepage": "https://github.com/OmarCastro/its-a-color-wheel#readme",
-  "dependencies": {
-    "esbuild": "0.17.5"
-  },
   "devDependencies": {
+    "@playwright/test": "^1.30.0",
+    "badge-maker": "^3.3.1",
+    "esbuild": "^0.17.5",
     "html-minifier": "^4.0.0",
     "jsdom": "^21.1.0",
+    "nyc": "^15.1.0",
     "prismjs": "^1.29.0"
   }
 }
