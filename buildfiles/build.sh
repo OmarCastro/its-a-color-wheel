@@ -14,4 +14,7 @@ npx esbuild src/color-wheel.element.js --bundle --outfile=build/docs/color-wheel
 npx esbuild src/color-wheel.element.js --bundle --minify --sourcemap --outfile=build/docs/color-wheel.element.min.js \
     --format=esm --target=es2020 --loader:.element.html=text --loader:.element.css=text
 npx esbuild docs/doc.css --bundle --minify --sourcemap --outfile=build/docs/doc.css
+
+npx nyc --reporter=json-summary --reporter=lcov --report-dir=build/docs/coverage playwright test
+node buildfiles/build-coverage-badge.mjs
 node buildfiles/build-html.mjs
