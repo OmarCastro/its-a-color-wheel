@@ -5,4 +5,4 @@ cd "$SCRIPT_DIR"/..
 
 mkdir -p dist/browser
 
-cp buid/dist/* dist/browser
+cp build/dist/* dist/browser
