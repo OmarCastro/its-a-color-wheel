@@ -8,6 +8,7 @@
     "test": "test"
   },
   "scripts": {},
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/OmarCastro/its-a-color-wheel.git"
