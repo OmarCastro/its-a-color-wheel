@@ -49,6 +49,7 @@ const config: PlaywrightTestConfig = {
       use: {
         ...devices['Desktop Chrome'],
       },
+      testIgnore: /.unit.spec/,
     },
 
     {
@@ -56,6 +57,7 @@ const config: PlaywrightTestConfig = {
       use: {
         ...devices['Desktop Firefox'],
       },
+      testIgnore: /.unit.spec/,
     },
 
     {
@@ -63,6 +65,13 @@ const config: PlaywrightTestConfig = {
       use: {
         ...devices['Desktop Safari'],
       },
+      testIgnore: /.unit.spec/,
+
+      
+    },
+    {
+      name: 'unit',
+      testMatch: /.unit.spec/,
     },
 
     /* Test against mobile viewports. */
