@@ -6,11 +6,12 @@ interface Rect {
     height: number
 }
 
-/**
- * @param {{x: number, y: number}} p1
- * @param {{x: number, y: number}} p2
- */
-export const calculateDistanceBetween2Points = ({x: x1, y: y1}, {x: x2, y: y2}) => Math.sqrt((x2 - x1)**2 + (y2 - y1)**2);
+interface Point {
+    x: number
+    y: number
+}
+
+export const calculateDistanceBetween2Points = ({x: x1, y: y1}: Point, {x: x2, y: y2}: Point) => Math.sqrt((x2 - x1)**2 + (y2 - y1)**2);
 
 export const CircleInfo = {
     fromRectWithPercentInnerRadius(rect: Rect, innerRadiusPerc: number){
