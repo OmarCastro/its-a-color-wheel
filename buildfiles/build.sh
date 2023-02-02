@@ -21,7 +21,7 @@ npx esbuild docs/doc.css --bundle --minify --sourcemap --outfile=build/docs/doc.
 cp build/dist/* build/docs
 
 # run tests
-npx c8 --reporter=json-summary --reporter=lcov --report-dir=build/docs/coverage playwright test
+npx c8 -c '.c8rc' --reporter=json-summary --reporter=lcov playwright test
 node buildfiles/build-coverage-badge.mjs
 
 # build html
