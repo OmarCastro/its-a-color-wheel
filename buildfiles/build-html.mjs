@@ -8,7 +8,7 @@ const docsPath = new URL('../docs',import.meta.url).pathname;
 
 const fs = await import('fs')
 
-const data = fs.readFileSync(`${docsPath}/index.html`, 'utf8');
+const data = fs.readFileSync(`${docsPath}/${process.argv[2]}`, 'utf8');
 const jsdom = await import("jsdom");
 const dom = new jsdom.JSDOM(data);
 globalThis.window = dom.window
@@ -75,7 +75,7 @@ const minifiedHtml = minify("<!DOCTYPE html>" + document.documentElement?.outerH
   collapseWhitespace: true
 })
 
-fs.writeFileSync(`${projectPath}/build/docs/index.html`, minifiedHtml);
+fs.writeFileSync(`${projectPath}/build/docs/${process.argv[2]}`, minifiedHtml);
 
 
 
