@@ -1,13 +1,8 @@
 
-export interface AssertDefinition {
-    given: string
-    should: string
-    actual: any
-    expected: any
-}
 
 export interface TestAPI {
-    assert(assert:AssertDefinition): void | Promise<void>
+    expect: any
+    step(description: string, step: () => Promise<any>): any
 }
 
 export interface Test {
@@ -35,14 +30,16 @@ const fn = async () => {
 
         // init unit tests for deno
 
-        importStr = 'https://deno.land/std@0.174.0/testing/asserts.ts';
-        const { assertEquals } = await importModule(importStr);
-        setTestAdapter(({description, test: t}) => {
-            return t({
-                assert: ({given, should, actual, expected}) => {
-                    globalThis.Deno.test(`${description} : Given ${given}, should ${should}`, () => assertEquals(actual, expected)) 
-                }
-            });
+        importStr = 'https://deno.land/x/expect/mod.ts';
+        const { expect } = await importModule(importStr);
+        setTestAdapter(({description, test}) => {
+            globalThis.Deno.test(`${description}`, async (t) => {
+                await test({
+                    step: t.step,
+                    expect
+                });
+            }) 
+            
         })
         return
     }
@@ -55,22 +52,32 @@ const fn = async () => {
         const { test, expect } = await importModule(importStr);
     
         setTestAdapter(({description, test: t}) => {
-            return t({
-                assert: ({given, should, actual, expected}) => {
-                    test(`${description} : Given ${given}, should ${should}`, () => expect(actual).toStrictEqual(expected)) 
-                }
-            });
+
+            test(description, () => {
+                t({
+                    step: test.step,
+                    expect
+                });
+            }) 
         })
     
     } else {
         
         // init unit tests to be run in browser
+
+        const { expect } = await import('expect');
+
         
         setTestAdapter(({description, test: t}) => {
+            console.log("-"+description)
+
             return t({
-                assert: ({given, should, actual, expected}) => {
-                    console.log(`${description} : Given ${given}, should ${should}: %o, %o, TODO test`,actual, expected)
-                }
+
+                step: async (description, test) => {
+                    console.log("--"+description)
+                    await test()
+                },
+                expect
             });
         })
     }
