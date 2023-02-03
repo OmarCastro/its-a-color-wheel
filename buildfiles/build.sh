@@ -20,10 +20,12 @@ npx esbuild docs/doc.ts --bundle --minify --sourcemap --outfile=build/docs/doc.m
 npx esbuild docs/doc.css --bundle --minify --sourcemap --outfile=build/docs/doc.css
 cp build/dist/* build/docs
 
+# build test-page
+node buildfiles/build-html.mjs test-page.html
+
 # run tests
 npx c8 -c '.c8rc' --reporter=json-summary --reporter=lcov playwright test
 node buildfiles/build-coverage-badge.mjs
 
 # build html
 node buildfiles/build-html.mjs index.html
-node buildfiles/build-html.mjs test-page.html

@@ -7,35 +7,26 @@
         <link rel="stylesheet" href="../build/docs/doc.css" ss:inline>
         <script type="module" src="color-wheel.element.min.js?named=color-wheel" async></script>
         <meta name="viewport" content="width=device-width">
+        <style>.test__view { display: inline-block; border: solid 2px black; }</style>
     </head>
     <body>
         <h1>
             It's a color wheel Test page
         </h1>
 
-      
-
-        <section>
+        <section class="test test--base">
             <h2> Color wheel  </h2>
-
-            <div class="result">
-                <color-wheel></color-wheel>
-            </div>
-            <div class="expected">
-
-            </div>
+            <div class="test__view"><color-wheel></color-wheel></div>
         </section>
 
-
-        <section>
+        <section class="test test--lightness">
             <h2> lightness  </h2>
+            <div class="test__view"><color-wheel lightness="50"></color-wheel></div>
+        </section>
 
-            <div class="result">
-                <color-wheel></color-wheel>
-            </div>
-            <div class="expected">
-
-            </div>
+        <section class="test test--value">
+            <h2> value </h2>
+            <div class="test__view"><color-wheel value="50"></color-wheel></div>
         </section>
 
     </body>
