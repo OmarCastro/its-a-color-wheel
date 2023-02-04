@@ -1,6 +1,6 @@
 {
     "all": true,
     "reporter":["json"],
-    "include": ["src/*.ts", "src/*.js", "build/docs/*.js", "build/docs/*.js.map"],
-    "exclude": ["src/*.spec.ts", "src/*.spec.js", "build/docs/doc.*.js"]
+    "include": ["src/*.ts", "src/*.js"],
+    "exclude": ["src/*.spec.ts", "src/*.spec.js"]
 }
