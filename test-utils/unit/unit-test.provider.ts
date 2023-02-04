@@ -53,8 +53,8 @@ const fn = async () => {
     
         setTestAdapter(({description, test: t}) => {
 
-            test(description, () => {
-                t({
+            test(description, async () => {
+                await t({
                     step: test.step,
                     expect
                 });

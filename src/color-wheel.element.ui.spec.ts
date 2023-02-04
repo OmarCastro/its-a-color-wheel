@@ -1,6 +1,4 @@
-import { test, expect } from '@playwright/test'
-
-
+import { test, expect } from '../test-utils/ui-tests.ts'
 
 test('base test', async ({ page }) => {
   await page.goto('./build/docs/test-page.html');
