@@ -11,6 +11,7 @@ node_modules
 
 # code coverage
 .nyc_output
+coverage
 
 ### VisualStudioCode ###
 # VisualStudioCode settings
