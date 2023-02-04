@@ -1,7 +1,6 @@
 {
     "all": true,
-    "reportDir": "build/docs/coverage",
-    "include": ["src/*.ts", "src/*.js"],
-    "exclude": ["src/*.spec.ts", "src/*.spec.js"]
-
+    "reporter":["json"],
+    "include": ["src/*.ts", "src/*.js", "build/docs/*.js", "build/docs/*.js.map"],
+    "exclude": ["src/*.spec.ts", "src/*.spec.js", "build/docs/doc.*.js"]
 }
