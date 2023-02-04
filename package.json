@@ -36,6 +36,7 @@
     "prismjs": "^1.29.0"
   },
   "dependencies": {
-    "expect": "^29.4.1"
+    "expect": "^29.4.1",
+    "playwright": "^1.30.0"
   }
 }
