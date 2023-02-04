@@ -1,11 +1,7 @@
 import { makeBadge } from 'badge-maker'
-import json from '../build/docs/coverage/coverage-summary.json' assert {type: "json"}
+import { readFile, writeFile } from 'node:fs/promises'
 
-const format = {
-  label: 'coverage',
-  message: `${json.total.lines.pct}%`,
-  color: badgeColor(json.total.lines.pct),
-}
+const projectPath = new URL('../',import.meta.url).pathname;
 
 function badgeColor(pct){
   if(pct > 90){ return 'green' }
@@ -15,10 +11,20 @@ function badgeColor(pct){
   return 'red'
 }
 
-const svg = makeBadge(format)
+async function makeBadgeForCoverages(path){
+  const json = await readFile(`${path}/coverage-summary.json`).then(str => JSON.parse(str))
+  const svg = makeBadge({
+    label: 'coverage',
+    message: `${json.total.lines.pct}%`,
+    color: badgeColor(json.total.lines.pct),
+  })
+  
+  await writeFile(`${path}/coverage-badge.svg`, svg);
+}
 
-const fs = await import('fs')
-
-const projectPath = new URL('../',import.meta.url).pathname;
-fs.writeFileSync(`${projectPath}/build/docs/coverage-badge.svg`, svg);
+await Promise.allSettled([
+  makeBadgeForCoverages(`${projectPath}/coverage/unit`),
+  makeBadgeForCoverages(`${projectPath}/coverage/ui`),
+  makeBadgeForCoverages(`${projectPath}/coverage/final`)
+])
 
