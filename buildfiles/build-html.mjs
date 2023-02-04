@@ -1,5 +1,6 @@
 import Prism from 'prismjs'
 import {minify} from 'html-minifier'
+import {imageSize} from 'image-size'
 
 //import { minifyHTML } from "https://deno.land/x/minifier/mod.ts";
 
@@ -62,6 +63,16 @@ queryAll("svg[ss:include]").forEach(element => {
   const svgText = fs.readFileSync(`${docsPath}/${ssInclude}`, 'utf8');
   element.outerHTML = svgText
 })
+
+
+queryAll("img[ss:size]").forEach(element => {
+  const imageSrc = element.getAttribute("src")
+  const size = imageSize(`${projectPath}/${imageSrc}`);
+  element.removeAttribute("ss:size")
+  element.setAttribute("width", `${size.width}`)
+  element.setAttribute("height", `${size.height}`)
+})
+
 
 queryAll('link[href][rel="stylesheet"][ss:inline]').forEach(element => {
   const ssInclude = element.getAttribute("href")
