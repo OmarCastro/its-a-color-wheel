@@ -4,6 +4,7 @@ cd "$SCRIPT_DIR"/..
 
 # clean
 rm -rf build
+rm -rf coverage
 
 
 # build dist
@@ -24,8 +25,17 @@ cp build/dist/* build/docs
 node buildfiles/build-html.mjs test-page.html
 
 # run tests
-npx c8 -c '.c8rc' --reporter=json-summary --reporter=lcov playwright test
-node buildfiles/build-coverage-badge.mjs
+npx c8 -c '.c8rc' --report-dir coverage/unit --reporter json-summary --reporter json --reporter lcov playwright test
+
+mkdir -p coverage/tmp
+cp coverage/*/tmp/* coverage/tmp
+mkdir -p coverage/final
+mv coverage/tmp coverage/final/tmp
+
+npx c8 --report-dir coverage/ui report -r lcov -r json-summary --include 'build/docs/color-wheel.element.min.js'
+npx c8 --report-dir coverage/final report -r lcov -r json-summary --include 'src/*.ts' --include 'src/*.js' --include 'build/docs/color-wheel.element.min.js'
+
+#node buildfiles/build-coverage-badge.mjs
 
 # build html
-node buildfiles/build-html.mjs index.html
+#node buildfiles/build-html.mjs index.html
