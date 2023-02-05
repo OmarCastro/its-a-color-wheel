@@ -4,10 +4,10 @@ import { readFile, writeFile } from 'node:fs/promises'
 const projectPath = new URL('../',import.meta.url).pathname;
 
 function badgeColor(pct){
-  if(pct > 90){ return '#007700' }
-  if(pct > 70){ return '#777700' }
-  if(pct > 50){ return '#883300' }
-  if(pct > 30){ return '#aa0000' }
+  if(pct > 80){ return '#007700' }
+  if(pct > 60){ return '#777700' }
+  if(pct > 40){ return '#883300' }
+  if(pct > 20){ return '#aa0000' }
   return 'red'
 }
 
