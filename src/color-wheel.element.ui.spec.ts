@@ -33,11 +33,12 @@ test('value visual testing', async ({ page }) => {
 });
 
 
-test('dragging pointer should', async ({ page }) => {
+test('slider should follow mouse position when dragging the mouse', async ({ page }) => {
   await page.goto('./build/docs/test-page.html');
     
-  const colorWheel = page.locator('.test--base .test__view color-wheel');
-  const slider = colorWheel.getByRole("slider")
+  const colorWheelElement = page.locator('.test--base .test__view color-wheel');
+  const colorWheel = colorWheelElement.locator('.container');
+  const slider = colorWheelElement.getByRole("slider")
   const sliderBoundingBox = await slider.boundingBox();
   const colorWheelBoundingBox = await colorWheel.boundingBox();
   test.fail(!sliderBoundingBox || !colorWheelBoundingBox, "bounding box is null")
@@ -45,13 +46,33 @@ test('dragging pointer should', async ({ page }) => {
     throw new Error("Should have failed already") 
     //also, the if condition stops TS complaining that boundingBox is possibly null 
   }
-  const sliderCenterPoint = {
-    x: sliderBoundingBox.x + sliderBoundingBox.width  / 2,
-    y: sliderBoundingBox.y + sliderBoundingBox.height / 2
+  
+  const centerPoint = {
+    x: colorWheelBoundingBox.x + colorWheelBoundingBox.width  / 2,
+    y: colorWheelBoundingBox.y + colorWheelBoundingBox.height / 2
   }
-  await page.mouse.move(sliderCenterPoint.x, sliderCenterPoint.y)
+
+  const getSturation = async () => await colorWheelElement.evaluate(node => parseInt(node.getAttribute("saturation") as string))
+  const getHue = async () => await colorWheelElement.evaluate(node => parseInt(node.getAttribute("hue") as string))
+
+  await page.mouse.move(centerPoint.x, centerPoint.y)
   await page.mouse.down()
-  await page.mouse.move(sliderCenterPoint.x, colorWheelBoundingBox.y)
+  await page.mouse.move(centerPoint.x, colorWheelBoundingBox.y)
+  expect.soft(await getSturation()).toEqual(100);
+  expect.soft(await getHue()).toBeCloseTo(0);
+  await page.mouse.move(colorWheelBoundingBox.x, colorWheelBoundingBox.y)
+  expect.soft(await getHue()).toBeCloseTo(45, -1);
+  await page.mouse.move(colorWheelBoundingBox.x, centerPoint.y)
+  expect.soft(await getHue()).toBeCloseTo(90, -1);
+  await page.mouse.move(colorWheelBoundingBox.x, colorWheelBoundingBox.y + colorWheelBoundingBox.height)
+  expect.soft(await getHue()).toBeCloseTo(135, -1);
+  await page.mouse.move(centerPoint.x, colorWheelBoundingBox.y + colorWheelBoundingBox.height)
+  expect.soft(await getHue()).toBeCloseTo(180, -1);
+  await page.mouse.move(colorWheelBoundingBox.x + colorWheelBoundingBox.width, colorWheelBoundingBox.y + colorWheelBoundingBox.height)
+  expect.soft(await getHue()).toBeCloseTo(225, -1);
+  await page.mouse.move(colorWheelBoundingBox.x + colorWheelBoundingBox.width, centerPoint.y)
+  expect.soft(await getHue()).toBeCloseTo(270, -1);
+  await page.mouse.move(colorWheelBoundingBox.x + colorWheelBoundingBox.width, colorWheelBoundingBox.y)
+  expect.soft(await getHue()).toBeCloseTo(315, -1);
   await page.mouse.up()
-  expect(await colorWheel.evaluate(node => node.getAttribute("saturation"))).toEqual("100");
 });
