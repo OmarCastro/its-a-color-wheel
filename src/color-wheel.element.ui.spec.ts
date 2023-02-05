@@ -32,6 +32,20 @@ test('value visual testing', async ({ page }) => {
 
 });
 
+test('value ui-mode visual testing', async ({ page }) => {
+  await page.goto('./build/docs/test-page.html');
+
+  const testView = page.locator('.test--ui-mode .test__view')
+  const colorWheel = testView.locator('color-wheel')
+  
+  await testView.evaluate(node => node.setAttribute("style", '--ui-mode: "desktop"'))
+  await expect.soft(await colorWheel.screenshot()).toMatchSnapshot('color-wheel-ui-mode-desktop.png');
+  await testView.evaluate(node => node.setAttribute("style", '--ui-mode: "mobile"'))
+  await expect.soft(await colorWheel.screenshot()).toMatchSnapshot('color-wheel-ui-mode-mobile.png');
+});
+
+
+
 
 test('slider should follow mouse position when dragging the mouse', async ({ page }) => {
   await page.goto('./build/docs/test-page.html');
