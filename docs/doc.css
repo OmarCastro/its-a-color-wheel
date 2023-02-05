@@ -14,7 +14,15 @@ html {
         --resizable-border-color: #dddcdf;
     }
 }
-  
+
+.badges-section img {
+    object-fit: contain;
+}
+
+.badges-section a {
+    display: inline-block;
+}
+
 body {
     background-color: var(--bg-color);
     color: var(--fg-color);
