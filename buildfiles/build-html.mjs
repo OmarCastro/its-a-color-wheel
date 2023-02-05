@@ -73,6 +73,16 @@ queryAll("img[ss:size]").forEach(element => {
   element.setAttribute("height", `${size.height}`)
 })
 
+queryAll("img[ss:badge-attrs]").forEach(element => {
+  const imageSrc = element.getAttribute("src")
+  const svgText = fs.readFileSync(`${projectPath}/${imageSrc}`, 'utf8');
+  const div = document.createElement("div")
+  div.innerHTML = svgText
+  element.removeAttribute("ss:badge-attrs")
+  const svg = div.querySelector("svg")
+  element.setAttribute("alt", svg.getAttribute("aria-label"))
+  element.setAttribute("title", svg.querySelector("title").textContent)
+})
 
 queryAll('link[href][rel="stylesheet"][ss:inline]').forEach(element => {
   const ssInclude = element.getAttribute("href")
