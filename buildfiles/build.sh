@@ -4,8 +4,6 @@ cd "$SCRIPT_DIR"/..
 
 # clean
 rm -rf build
-rm -rf coverage
-
 
 # build dist & doumentation
 mkdir -p build/dist build/docs
@@ -22,6 +20,8 @@ cp build/dist/* build/docs
 node buildfiles/build-html.mjs test-page.html &
 
 # run tests
+
+rm -rf coverage
 npx c8 -c '.c8rc' --report-dir coverage/unit --reporter json-summary --reporter json --reporter lcov playwright test
 
 mkdir -p coverage/tmp
