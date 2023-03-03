@@ -25,10 +25,14 @@ async function makeBadgeForCoverages(path){
 
 async function makeBadgeForTestResult(path){
   const json = await readFile(`${path}/test-results.json`).then(str => JSON.parse(str))
-  const passed = json?.errors?.length <= 0
+  const tests = (json?.suites ?? []).flatMap(suite => suite.specs)
+  const passedTests = tests.filter(test => test.ok)
+  const testAmount = tests.length
+  const passedAmount = passedTests.length
+  const passed = passedAmount == testAmount
   const svg = makeBadge({
     label: 'tests',
-    message: passed ? 'passed' : 'failed',
+    message: `${passedAmount} / ${testAmount}`,
     color: passed ? '#007700' : '#aa0000',
     style: 'for-the-badge',
   })
