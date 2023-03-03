@@ -33,6 +33,7 @@ const config: PlaywrightTestConfig = {
   reporter: [ 
     ['html', { open: 'never' }],
     ['json', {  outputFile: 'test-results/test-results.json' }],
+    ['junit', { outputFile: 'test-results/results.xml' }],
     ['list']
   ],
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
@@ -106,7 +107,7 @@ const config: PlaywrightTestConfig = {
   ],
 
   /* Folder for test artifacts such as screenshots, videos, traces, etc. */
-  // outputDir: 'test-results/',
+  outputDir: 'test-results/',
 
   /* Run your local dev server before starting the tests */
    webServer: {
