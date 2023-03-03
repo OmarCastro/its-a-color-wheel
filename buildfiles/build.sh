@@ -34,6 +34,8 @@ npx c8 --report-dir coverage/final report -r lcov -r json-summary --include 'src
 
 node buildfiles/build-coverage-badge.mjs
 cp -R coverage build/docs/coverage
+cp -R playwright-report build/docs/playwright-report
+cp -R test-results build/docs/test-results
 
 # build html
 node buildfiles/build-html.mjs index.html
