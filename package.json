@@ -26,7 +26,7 @@
   },
   "homepage": "https://github.com/OmarCastro/its-a-color-wheel#readme",
   "devDependencies": {
-    "@playwright/test": "^1.30.0",
+    "@playwright/test": "^1.31.2",
     "badge-maker": "^3.3.1",
     "c8": "^7.12.0",
     "esbuild": "^0.17.5",
@@ -34,10 +34,10 @@
     "http-server": "^14.1.1",
     "image-size": "^1.0.2",
     "jsdom": "^21.1.0",
+    "playwright": "^1.31.2",
     "prismjs": "^1.29.0"
   },
   "dependencies": {
-    "expect": "^29.4.1",
-    "playwright": "^1.30.0"
+    "expect": "^29.4.1"
   }
 }
