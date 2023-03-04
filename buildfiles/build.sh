@@ -32,7 +32,7 @@ mv coverage/tmp coverage/final/tmp
 npx c8 --report-dir coverage/ui report -r lcov -r json-summary --include 'build/docs/color-wheel.element.min.js'
 npx c8 --report-dir coverage/final report -r lcov -r json-summary --include 'src/*.ts' --include 'src/*.js' --include 'build/docs/color-wheel.element.min.js'
 
-node buildfiles/build-coverage-badge.mjs
+node buildfiles/build-badges.mjs
 cp -R coverage build/docs/coverage
 cp -R playwright-report build/docs/playwright-report
 cp -R test-results build/docs/test-results
