@@ -8,19 +8,19 @@
   }
   body {
       font-family: Helvetica Neue, Helvetica, Arial;
-      font-size: 14px;
+      font-size: 1em;
       color:#333;
   }
-  .small { font-size: 12px; }
+  .small { font-size: 0.8rem; }
   *, *:after, *:before {
     -webkit-box-sizing:border-box;
        -moz-box-sizing:border-box;
             box-sizing:border-box;
     }
-  h1 { font-size: 20px; margin: 0;}
-  h2 { font-size: 14px; }
+  h1 { font-size: 1.5rem; margin: 0;}
+  h2 { font-size: 1rem; }
   pre {
-      font: 12px/1.4 Consolas, "Liberation Mono", Menlo, Courier, monospace;
+      font: 0.9rem/1.4 Consolas, "Liberation Mono", Menlo, Courier, monospace;
       margin: 0;
       padding: 0;
       -moz-tab-size: 2;
@@ -61,7 +61,7 @@
   
   .fraction {
     font-family: Consolas, 'Liberation Mono', Menlo, Courier, monospace;
-    font-size: 10px;
+    font-size: 0.7rem;
     color: #555;
     background: #E8E8E8;
     padding: 4px 5px;
@@ -228,13 +228,13 @@
   }
   
   
-  @media (prefers-color-scheme: dark) {
+  @media screen and (prefers-color-scheme: dark) {
     body {
       color:#ddd;
       background:#222;
     }
     .quiet {
-      color: rgba(255,255,255,0.5);
+      color: rgba(255,255,255,0.7);
     }
   
     .cover-empty {
@@ -244,7 +244,7 @@
     a { color:#abc4da;}
   
     /* yellow */
-    .cbranch-no { background: yellow !important; color: #111; }
+    .cbranch-no { background: #550 !important; color: #ddd; }
     /* dark red */
     .red.solid, .status-line.low, .low .cover-fill { background:#C21F39 }
     .low .chart { border:1px solid #C21F39 }
@@ -253,7 +253,7 @@
       background: #C21F39 !important;
     }
     /* medium red */
-    .cstat-no, .fstat-no, .cbranch-no, .cbranch-no { background:#F6C6CE }
+    .cstat-no, .fstat-no, .cbranch-no, .cbranch-no { background:#390911 }
     /* light red */
     .low, .cline-no { background:#C21F39 }
     /* light green */
