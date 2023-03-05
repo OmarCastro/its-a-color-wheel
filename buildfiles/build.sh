@@ -37,5 +37,8 @@ cp -R coverage build/docs/coverage
 cp -R playwright-report build/docs/playwright-report
 cp -R test-results build/docs/test-results
 
+#replace base.css on coverage reports
+find build/docs/coverage -name "base.css" | xargs -I {} cp -f buildfiles/coverage-report-base.css {}
+
 # build html
 node buildfiles/build-html.mjs index.html
