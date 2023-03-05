@@ -39,6 +39,7 @@ cp -R test-results build/docs/test-results
 
 #replace base.css on coverage reports
 find build/docs/coverage -name "base.css" | xargs -I {} cp -f buildfiles/coverage-report-base.css {}
+find build/docs/coverage -name "prettify.css" | xargs -I {} cp -f buildfiles/coverage-report-prettify.css {}
 
 # build html
 node buildfiles/build-html.mjs index.html
