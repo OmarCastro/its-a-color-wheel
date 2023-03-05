@@ -263,11 +263,8 @@
     /* dark green */
     .status-line.high, .high .cover-fill { background:#1d541a }
     /* dark yellow (gold) */
-    .status-line.medium, .medium .cover-fill { 
-      background: #f9cd0b; 
-      color: #111;
-    }
-    .medium .chart { border:1px solid #f9cd0b; }
+    .status-line.medium, .medium .cover-fill { background: #755F00; }
+    .medium .chart { border:1px solid #755F00; }
 
     .medium { 
       background: #755F00; 
@@ -277,15 +274,25 @@
       filter: invert(100%);
     }
 
+    .missing-if-branch {
+      background: #ddd;
+      color: #755F00;
+    }
+    
+    .skip-if-branch {
+        background: #444;
+        color: #000;
+    }
+
     .coverage-summary tr { border-color: #3A3A3A; }
     .keyline-all { border-color: #3A3A3A; }
     .coverage-summary tbody { border-color: #3A3A3A; }
     .coverage-summary td { border-color: #3A3A3A; }
   
   
-    .cstat-skip { background: #ddd; color: #111; }
-    .fstat-skip { background: #ddd; color: #111 !important; }
-    .cbranch-skip { background: #ddd !important; color: #111; }
+    .cstat-skip { background: #333; color: #eee; }
+    .fstat-skip { background: #333; color: #eee !important; }
+    .cbranch-skip { background: #333 !important; color: #eee; }
   
     span.cline-neutral { background: #1c1c1c; }
 
