@@ -1,6 +1,7 @@
 # its-a-color-picker
 
 ![Test coverage](https://omarcastro.github.io/its-a-color-wheel/coverage/final/coverage-badge.svg)
+![Test Result](https://omarcastro.github.io/its-a-color-wheel/test-results/test-results-badge.svg)
 ![License](https://img.shields.io/github/license/OmarCastro/its-a-color-wheel?color=%23007700&style=for-the-badge)
 ![Release version](https://img.shields.io/github/v/release/OmarCastro/its-a-color-wheel?style=for-the-badge)
 
