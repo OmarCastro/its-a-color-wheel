@@ -30,14 +30,12 @@
     "badge-maker": "^3.3.1",
     "c8": "^7.12.0",
     "esbuild": "^0.17.5",
+    "expect": "^29.5.0",
     "html-minifier": "^4.0.0",
     "http-server": "^14.1.1",
     "image-size": "^1.0.2",
     "jsdom": "^21.1.0",
     "playwright": "^1.31.2",
     "prismjs": "^1.29.0"
-  },
-  "dependencies": {
-    "expect": "^29.4.1"
   }
 }
