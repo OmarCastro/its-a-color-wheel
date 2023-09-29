@@ -26,16 +26,15 @@
   },
   "homepage": "https://github.com/OmarCastro/its-a-color-wheel#readme",
   "devDependencies": {
-    "@playwright/test": "^1.31.2",
+    "@playwright/test": "^1.38.1",
     "badge-maker": "^3.3.1",
-    "c8": "^7.12.0",
-    "esbuild": "^0.17.5",
-    "expect": "^29.5.0",
+    "c8": "^8.0.1",
+    "esbuild": "^0.19.4",
+    "expect": "^29.7.0",
     "html-minifier": "^4.0.0",
     "http-server": "^14.1.1",
     "image-size": "^1.0.2",
-    "jsdom": "^21.1.0",
-    "playwright": "^1.31.2",
+    "jsdom": "^22.1.0",
     "prismjs": "^1.29.0"
   }
 }
