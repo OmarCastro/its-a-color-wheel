@@ -31,10 +31,12 @@
     "c8": "^8.0.1",
     "esbuild": "^0.19.4",
     "expect": "^29.7.0",
+    "glob": "^10.3.10",
     "html-minifier": "^4.0.0",
     "http-server": "^14.1.1",
     "image-size": "^1.0.2",
     "jsdom": "^22.1.0",
+    "marked": "^9.0.3",
     "prismjs": "^1.29.0"
   }
 }
