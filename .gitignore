@@ -5,6 +5,7 @@ build
 node_modules
 
 # test results
+reports
 /test-results/
 /playwright-report/
 /playwright/.cache/
