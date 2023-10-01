@@ -47,6 +47,10 @@ const tasks = {
     description: 'launch dev server',
     cb: async () => { await openDevServer(); await wait(2 ** 30) },
   },
+  'test-server': {
+    description: 'launch test server, used when running tests',
+    cb: async () => { await openTestServer(); await wait(2 ** 30) },
+  },
   help: helpTask,
   '--help': helpTask,
   '-h': helpTask,
@@ -92,17 +96,15 @@ async function execDevEnvironment () {
 
 async function execTests () {
   await cmdSpawn('TZ=UTC npx c8 --all --include "src/**/*.{js,ts}" --exclude "src/**/*.{test,spec}.{js,ts}" --temp-directory ".tmp/coverage" --report-dir reports/.tmp/coverage/unit --reporter json-summary --reporter json --reporter lcov playwright test')
-  
+
   await rm_rf('reports/.tmp/coverage/final')
   await mkdir_p('reports/.tmp/coverage/final')
   await cp_R('.tmp/coverage', 'reports/.tmp/coverage/final/tmp')
   await cp_R('reports/.tmp/coverage/ui/tmp', 'reports/.tmp/coverage/final/tmp')
 
-  
   await cmdSpawn('TZ=UTC npx c8 --report-dir reports/.tmp/coverage/ui report -r lcov -r json-summary --include build/docs/color-wheel.element.min.js')
   await cmdSpawn("TZ=UTC npx c8 --report-dir reports/.tmp/coverage/final report -r lcov -r json-summary --include 'src/*.ts' --include 'src/*.js' --include 'build/docs/color-wheel.element.min.js'")
-  
-  
+
   if (existsSync('reports/coverage')) {
     await mv('reports/coverage', 'reports/coverage.bak')
   }
@@ -180,6 +182,7 @@ async function execBuild () {
   logStage('build html')
 
   await execPromise(`${process.argv[0]} buildfiles/scripts/build-html.js index.html`)
+  await execPromise(`${process.argv[0]} buildfiles/scripts/build-html.js test-page.html`)
 
   logStage('move to final dir')
 
@@ -303,6 +306,22 @@ async function openDevServer () {
   serve.start(params)
   updateDevServer = serve.update
   open(`https://${host}:${port}/build/docs`)
+}
+
+async function openTestServer () {
+  const { default: serve } = await import('wonton')
+
+  const host = 'localhost'
+  const port = 8182
+
+  const params = {
+    host,
+    port,
+    fallback: 'index.html',
+    live: false,
+    root: pathFromProject('.'),
+  }
+  serve.start(params)
 }
 
 function wait (ms) {
