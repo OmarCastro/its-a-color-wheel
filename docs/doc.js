@@ -8,8 +8,9 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 
-const reactElementNameChange = (event: Event) => {
-  const componentName = (event.target as HTMLElement).closest(".component-name-edit") as HTMLElement
+/** @param {Event} event  */
+const reactElementNameChange = (event) => {
+  const componentName = (event.target).closest(".component-name-edit")
   if(componentName == null){ return false }
   const newText = componentName.textContent
   document.body.querySelectorAll(".component-name-ref").forEach(ref => ref.textContent = newText)
@@ -17,36 +18,39 @@ const reactElementNameChange = (event: Event) => {
 }
 
 
-const reactUIModeChange = (event: Event) => {
-  const uiMode = (event.target as HTMLElement).closest(".example .ui-mode-edit") as HTMLElement
+/** @param {Event} event  */
+const reactUIModeChange = (event) => {
+  const uiMode = (event.target).closest(".example .ui-mode-edit")
   if(uiMode == null){ return false }
   const uiModeText = uiMode.textContent
-  const example = uiMode.closest(".example")
-  example?.querySelectorAll<HTMLElement>("color-wheel").forEach(ref => ref.style.setProperty("--ui-mode", `"${uiModeText}"`))
+  uiMode.closest(".example")?.querySelectorAll("color-wheel").forEach(ref => ref.style.setProperty("--ui-mode", `"${uiModeText}"`))
   return true
 }
 
 
-const reactInnerRadiusChange = (event: Event) => {
-  const innerRadius = (event.target as HTMLElement).closest(".example .inner-radius-edit")  as HTMLElement
+/** @param {Event} event  */
+const reactInnerRadiusChange = (event) => {
+  const innerRadius = (event.target).closest(".example .inner-radius-edit")
   if(innerRadius == null){ return false }
   const innerRadiusText = innerRadius.textContent
   const example = innerRadius.closest(".example")
-  example?.querySelectorAll<HTMLElement>("color-wheel").forEach(ref => ref.style.setProperty("--color-wheel--inner-radius", `${innerRadiusText}%`))
+  example?.querySelectorAll("color-wheel").forEach(ref => ref.style.setProperty("--color-wheel--inner-radius", `${innerRadiusText}%`))
   return true
 }
 
-const reactLightnessChange = (event: Event) => {
-  const lightness = (event.target as HTMLElement).closest(".example .lightness-edit")as HTMLElement
+/** @param {Event} event  */
+const reactLightnessChange = (event) => {
+  const lightness = (event.target).closest(".example .lightness-edit")
   if(lightness == null){ return false }
   const lightnessText = lightness.textContent
   const example = lightness.closest(".example")
-  example?.querySelectorAll<HTMLElement>("color-wheel").forEach(ref => ref.setAttribute("lightness", lightnessText?? ""))
+  example?.querySelectorAll("color-wheel").forEach(ref => ref.setAttribute("lightness", lightnessText?? ""))
   return true
 }
 
-const reactValueChange = (event: Event) => {
-  const value = (event.target as HTMLElement).closest(".example .value-edit")as HTMLElement
+/** @param {Event} event  */
+const reactValueChange = (event) => {
+  const value = (event.target).closest(".example .value-edit")
   if(value == null){ return false }
   const valueText = value.textContent
   const example = value.closest(".example")
