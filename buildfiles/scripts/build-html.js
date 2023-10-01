@@ -46,7 +46,7 @@ const exampleCode = (strings, ...expr) => {
       .replace(/{{([^:]+):inner-radius}}/, '<span contenteditable="true" class="inner-radius-edit">$1</span>')
       .replace(/{{([^:]+):lightness}}/, '<span contenteditable="true" class="lightness-edit">$1</span>')
       .replace(/{{([^:]+):value}}/, '<span contenteditable="true" class="value-edit">$1</span>')
-      statement += strings[i + 1]
+    statement += strings[i + 1]
   }
 
   return statement
