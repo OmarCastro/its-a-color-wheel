@@ -10,11 +10,11 @@ jobs:
   test:
     runs-on: ubuntu-latest
     container:
-      image: mcr.microsoft.com/playwright:v1.31.2-focal
+      image: mcr.microsoft.com/playwright:v1.38.1-focal
     steps:
       - name: Checkout
         uses: actions/checkout@v3
       - name: Install dependencies
         run: npm ci
       - name: Run build
-        run: HOME=/root bash buildfiles/build.sh
+        run: HOME=/root bash buildfiles/run build:github-action
