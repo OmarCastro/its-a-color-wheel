@@ -3,7 +3,7 @@ import { test as base } from '@playwright/test'
 import { mkdir, writeFile, rm } from 'node:fs/promises'
 import { join } from 'node:path'
         
-await mkdir("coverage/ui/tmp", {recursive: true})
+await mkdir("reports/.tmp/coverage/ui/tmp", {recursive: true})
 
         
 export const test = base.extend({
@@ -26,7 +26,7 @@ export const test = base.extend({
         });
                 
         for (const entry of coverage) {
-            const filetoWrite = join(process.cwd(),`coverage/ui/tmp/coverage-ui-${Date.now()}-${entry.scriptId}.json`)
+            const filetoWrite = join(process.cwd(),`reports/.tmp/coverage/ui/tmp/coverage-ui-${Date.now()}-${entry.scriptId}.json`)
             const fileContent = JSON.stringify({result: [entry]})
             await writeFile(filetoWrite, fileContent)
         }
