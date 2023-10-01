@@ -8,7 +8,7 @@
     "test": "test"
   },
   "scripts": {
-    "start": "http-server"
+    "start": "buildfiles/run dev"
   },
   "type": "module",
   "repository": {
