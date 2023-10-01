@@ -95,6 +95,8 @@ async function execDevEnvironment () {
 }
 
 async function execTests () {
+  logStartStage('test', 'run tests')
+
   await cmdSpawn('TZ=UTC npx c8 --all --include "src/**/*.{js,ts}" --exclude "src/**/*.{test,spec}.{js,ts}" --temp-directory ".tmp/coverage" --report-dir reports/.tmp/coverage/unit --reporter json-summary --reporter json --reporter lcov playwright test')
 
   await rm_rf('reports/.tmp/coverage/final')
@@ -102,8 +104,8 @@ async function execTests () {
   await cp_R('.tmp/coverage', 'reports/.tmp/coverage/final/tmp')
   await cp_R('reports/.tmp/coverage/ui/tmp', 'reports/.tmp/coverage/final/tmp')
 
-  await cmdSpawn('TZ=UTC npx c8 --report-dir reports/.tmp/coverage/ui report -r lcov -r json-summary --include build/docs/color-wheel.element.min.js')
-  await cmdSpawn("TZ=UTC npx c8 --report-dir reports/.tmp/coverage/final report -r lcov -r json-summary --include 'src/*.ts' --include 'src/*.js' --include 'build/docs/color-wheel.element.min.js'")
+  await cmdSpawn('TZ=UTC npx c8 --report-dir reports/.tmp/coverage/ui report -r lcov -r json-summary --include build/docs/dist/color-wheel.element.min.js')
+  await cmdSpawn("TZ=UTC npx c8 --report-dir reports/.tmp/coverage/final report -r lcov -r json-summary --include 'src/*.ts' --include 'src/*.js' --include 'build/docs/dist/color-wheel.element.min.js'")
 
   if (existsSync('reports/coverage')) {
     await mv('reports/coverage', 'reports/coverage.bak')
@@ -122,15 +124,11 @@ async function execTests () {
   await rm_rf('build/docs/reports')
   await mkdir_p('build/docs')
   await cp_R('reports', 'build/docs/reports')
+  logEndStage()
 }
 
-async function execBuild () {
-  logStartStage('build', 'clean tmp dir')
-
-  await rm_rf('.tmp/build')
-  await mkdir_p('.tmp/build/dist', '.tmp/build/docs')
-
-  logStage('bundle')
+async function buildTest () {
+  logStartStage('build:test', 'bundle')
 
   const esbuild = await import('esbuild')
 
@@ -175,13 +173,8 @@ async function execBuild () {
 
   await Promise.all([esbuild1, esbuild2, esbuild3])
 
-  logStage('copy reports')
+  logStage('build test page html')
 
-  await cp_R('reports', '.tmp/build/docs/reports')
-
-  logStage('build html')
-
-  await execPromise(`${process.argv[0]} buildfiles/scripts/build-html.js index.html`)
   await execPromise(`${process.argv[0]} buildfiles/scripts/build-html.js test-page.html`)
 
   logStage('move to final dir')
@@ -189,8 +182,27 @@ async function execBuild () {
   await rm_rf('build')
   await cp_R('.tmp/build', 'build')
   await cp_R('build/dist', 'build/docs/dist')
-
   logEndStage()
+}
+
+async function buildDocs () {
+  logStartStage('build:docs', 'copy reports')
+
+  await cp_R('reports', '.tmp/build/docs/reports')
+
+  logStage('build docs html')
+
+  await execPromise(`${process.argv[0]} buildfiles/scripts/build-html.js index.html`)
+
+  logStage('move to final dir')
+
+  await cp_R('.tmp/build', 'build')
+  logEndStage()
+}
+
+async function execBuild () {
+  await buildTest()
+  await buildDocs()
 }
 
 async function execlintCode () {
@@ -202,8 +214,10 @@ async function execlintCode () {
 }
 
 async function execGithubBuildWorkflow () {
+  logStartStage('build:github')
+  await buildTest()
   await execTests()
-  await execBuild()
+  await buildDocs()
 }
 
 function helpText () {
@@ -247,7 +261,7 @@ function logEndStage () {
 
 function logStartStage (jobname, stage) {
   logStage.currentJobName = jobname
-  process.stdout.write(`[${jobname}] ${stage}...`)
+  stage && process.stdout.write(`[${jobname}] ${stage}...`)
 }
 
 async function checkNodeModulesFolder () {
