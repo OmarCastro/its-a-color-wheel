@@ -47,10 +47,11 @@ test('value ui-mode visual testing', async ({ page }) => {
 
 
 
-test('slider should follow mouse position when dragging the mouse', async ({ page }) => {
+test('slider should follow mouse position when dragging the mouse in desktop mode', async ({ page }) => {
   await page.goto('./build/docs/test-page.html');
     
-  const colorWheelElement = page.locator('.test--base .test__view color-wheel');
+  const colorWheelElement = page.locator('.test--desktop-ui-drag .test__view color-wheel');
+  await colorWheelElement.scrollIntoViewIfNeeded();
   const colorWheel = colorWheelElement.locator('.container');
   const slider = colorWheelElement.getByRole("slider")
   const sliderBoundingBox = await slider.boundingBox();
@@ -88,5 +89,79 @@ test('slider should follow mouse position when dragging the mouse', async ({ pag
   expect.soft(await getHue()).toBeCloseTo(270, -1);
   await page.mouse.move(colorWheelBoundingBox.x + colorWheelBoundingBox.width, colorWheelBoundingBox.y)
   expect.soft(await getHue()).toBeCloseTo(315, -1);
+  await page.mouse.up()
+});
+
+test('slider rotate following mouse theta position when dragging the mouse in mobile ui mode', async ({ page }) => {
+  await page.goto('./build/docs/test-page.html');
+    
+  const colorWheelElement = page.locator('.test--mobile-ui-drag .test__view color-wheel');
+  await colorWheelElement.scrollIntoViewIfNeeded();
+  const colorWheel = colorWheelElement.locator('.container');
+  const slider = colorWheelElement.getByRole("slider")
+  const sliderBoundingBox = await slider.boundingBox();
+  const colorWheelBoundingBox = await colorWheel.boundingBox();
+  test.fail(!sliderBoundingBox || !colorWheelBoundingBox, "bounding box is null")
+  if(!sliderBoundingBox || !colorWheelBoundingBox){
+    throw new Error("Should have failed already") 
+    //also, the if condition stops TS complaining that boundingBox is possibly null 
+  }
+  
+  const centerPoint = {
+    x: colorWheelBoundingBox.x + colorWheelBoundingBox.width  / 2,
+    y: colorWheelBoundingBox.y + colorWheelBoundingBox.height / 2
+  }
+
+  const getHue = async () => await colorWheelElement.evaluate(node => parseInt(node.getAttribute("hue")  ?? "0"))
+
+  await page.mouse.move(centerPoint.x, colorWheelBoundingBox.y + colorWheelBoundingBox.height * 0.1)
+  await page.mouse.down()
+  await page.mouse.move(centerPoint.x, colorWheelBoundingBox.y)
+  expect.soft(await getHue()).toBeCloseTo(0);
+  await page.mouse.move(colorWheelBoundingBox.x, colorWheelBoundingBox.y)
+  expect.soft(await getHue()).toBeCloseTo(315, -1);
+  await page.mouse.move(colorWheelBoundingBox.x, centerPoint.y)
+  expect.soft(await getHue()).toBeCloseTo(270, -1);
+  await page.mouse.move(colorWheelBoundingBox.x, colorWheelBoundingBox.y + colorWheelBoundingBox.height)
+  expect.soft(await getHue()).toBeCloseTo(225, -1);
+  await page.mouse.move(centerPoint.x, colorWheelBoundingBox.y + colorWheelBoundingBox.height)
+  expect.soft(await getHue()).toBeCloseTo(180, -1);
+  await page.mouse.move(colorWheelBoundingBox.x + colorWheelBoundingBox.width, colorWheelBoundingBox.y + colorWheelBoundingBox.height)
+  expect.soft(await getHue()).toBeCloseTo(135, -1);
+  await page.mouse.move(colorWheelBoundingBox.x + colorWheelBoundingBox.width, centerPoint.y)
+  expect.soft(await getHue()).toBeCloseTo(90, -1);
+  await page.mouse.move(colorWheelBoundingBox.x + colorWheelBoundingBox.width, colorWheelBoundingBox.y)
+  expect.soft(await getHue()).toBeCloseTo(45, -1);
+  await page.mouse.up()
+});
+
+
+test('slider should follow mouse vertical position when dragging the mouse in mobile ui mode', async ({ page }) => {
+  await page.goto('./build/docs/test-page.html');
+    
+  const colorWheelElement = page.locator('.test--mobile-ui-drag .test__view color-wheel');
+  await colorWheelElement.scrollIntoViewIfNeeded();
+  const colorWheel = colorWheelElement.locator('.container');
+  const slider = colorWheelElement.getByRole("slider")
+  const sliderBoundingBox = await slider.boundingBox();
+  const colorWheelBoundingBox = await colorWheel.boundingBox();
+  test.fail(!sliderBoundingBox || !colorWheelBoundingBox, "bounding box is null")
+  if(!sliderBoundingBox || !colorWheelBoundingBox){
+    throw new Error("Should have failed already") 
+    //also, the if condition stops TS complaining that boundingBox is possibly null 
+  }
+  
+  const sliderCenterPoint = {
+    x: sliderBoundingBox.x + sliderBoundingBox.width  / 2,
+    y: sliderBoundingBox.y + sliderBoundingBox.height / 2
+  }
+
+  const getSturation = async () => await colorWheelElement.evaluate(node => parseInt(node.getAttribute("saturation") ?? "0"))
+
+  expect.soft(await getSturation()).toEqual(0);
+  await page.mouse.move(sliderCenterPoint.x, sliderCenterPoint.y)
+  await page.mouse.down()
+  await page.mouse.move(sliderCenterPoint.x, colorWheelBoundingBox.y)
+  expect.soft(await getSturation()).toEqual(100);
   await page.mouse.up()
 });
