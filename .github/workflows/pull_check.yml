@@ -4,7 +4,7 @@ name: Run tests on pull request
 on:
   # Runs on pushes targeting the default branch
   pull_request:
-    branches: ["master"]
+    branches: ["main"]
 
 jobs:
   test:
