@@ -114,10 +114,10 @@ class ColorWheelElement extends HTMLElement {
       })
 
       const getAngle = (e) => {
-        const delta_x = e.clientX - centerPoint.x
-        const delta_y = centerPoint.y - e.clientY
-        const theta_radians = Math.atan2(delta_y, delta_x)
-        return theta_radians * -180 / Math.PI
+        const deltaX = e.clientX - centerPoint.x
+        const deltaY = centerPoint.y - e.clientY
+        const thetaRadians = Math.atan2(deltaY, deltaX)
+        return thetaRadians * -180 / Math.PI
       }
 
       const initDeg = getAngle(clientCoordinates)
@@ -234,12 +234,13 @@ function reflectHsl (element) {
   if (!container) { return }
   const setHSLMode = element.hasAttribute('lightness') && !element.hasAttribute('value')
   container.classList.toggle('container--hsl', setHSLMode)
+  return element
 }
 
 const reflectHue = element => setContainerProperty(element, '--hue', element.hue)
 const reflectSaturation = element => setContainerProperty(element, '--saturation', element.saturation)
-const reflectLightness = element => (reflectHsl(element), setContainerProperty(element, '--lightness', element.lightness))
-const reflectValue = element => (reflectHsl(element), setContainerProperty(element, '--value', element.value))
+const reflectLightness = element => setContainerProperty(reflectHsl(element), '--lightness', element.lightness)
+const reflectValue = element => setContainerProperty(reflectHsl(element), '--value', element.value)
 
 const url = new URL(import.meta.url)
 const elementName = url.searchParams.get('named')
