@@ -8,7 +8,17 @@
     "test": "test"
   },
   "scripts": {
-    "start": "buildfiles/run dev"
+    "build": "node ./buildfiles/run.js build",
+    "build:github-action": "node ./buildfiles/run.js build:github-action",
+    "test": "node ./buildfiles/run.js test",
+    "lint": "node ./buildfiles/run.js lint",
+    "linc": "node ./buildfiles/run.js linc",
+    "dev": "node ./buildfiles/run.js dev",
+    "dev:open": "node ./buildfiles/run.js dev:open",
+    "dev-server": "node ./buildfiles/run.js dev-server",
+    "dev-server:open": "node ./buildfiles/run.js dev-server:open",
+    "help": "node ./buildfiles/run.js help"
+
   },
   "type": "module",
   "repository": {
