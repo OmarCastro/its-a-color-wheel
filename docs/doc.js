@@ -31,7 +31,7 @@ const reactInnerRadiusChange = (event) => {
   if (innerRadius == null) { return false }
   const innerRadiusText = innerRadius.textContent
   const example = innerRadius.closest('.example')
-  example?.querySelectorAll('color-wheel').forEach(ref => ref.style.setProperty('--color-wheel--inner-radius', `${innerRadiusText}%`))
+  example?.querySelectorAll('color-wheel').forEach(ref => ref.style.setProperty('--color-wheel-inner-radius', `${innerRadiusText}%`))
   return true
 }
 

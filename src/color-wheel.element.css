@@ -3,7 +3,7 @@
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    --inner-radius: var(--color-wheel--inner-radius, 60%);
+    --inner-radius: var(--color-wheel-inner-radius, 60%);
     --radius: 5cm;
     min-height: calc(2 * var(--radius) + 2*  var(--thumb-radius) + 12px);
     --thumb-radius: var(--color-wheel-thumb-radius-mobile, var(--color-wheel-thumb-radius, 0.6cm));
@@ -36,7 +36,7 @@
 }
 
 .container--desktop-ui {
-  --inner-radius: var(--color-wheel--inner-radius, 0.1%);
+  --inner-radius: var(--color-wheel-inner-radius, 0.1%);
   --thumb-radius: var(--color-wheel-thumb-radius-desktop, var(--color-wheel-thumb-radius, 0.5cm));
 }
 
