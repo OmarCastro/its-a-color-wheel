@@ -6,7 +6,7 @@
         <meta name="keywords" content="color wheel webcomponents">
         <link rel="stylesheet" href="doc.css" ss:inline>
         <script type="module" src="dist/color-wheel.element.min.js?named=color-wheel" async></script>
-        <script src="doc.min.js" async></script>
+        <script src="doc.js" async></script>
         <meta name="viewport" content="width=device-width">
     </head>
     <body>
@@ -16,17 +16,18 @@
 
         <section style="text-align:center" class="badges-section">
             <a href="reports/coverage/final/lcov-report" aria-label="Show test code coverage information">
-                <img src="reports/coverage/final/coverage-badge.svg" height="30" width="180" ss:badge-attrs></img>
+                <img src="reports/coverage/final/coverage-badge-a11y.svg" height="30" width="180" ss:badge-attrs></img>
             </a>
             <a href="reports/playwright-report" aria-label="Show test code coverage information">
-                <img src="reports/test-results/test-results-badge.svg" height="30" width="180" ss:badge-attrs></img>
+                <img src="reports/test-results/test-results-badge-a11y.svg" height="30" width="180" ss:badge-attrs></img>
             </a>
             <a href="https://github.com/OmarCastro/its-a-color-wheel" aria-label="go to Github repository" title="go to Github repository">
-                <img src="reports/license-badge.svg" alt="project license" height="30" width="150" ></img>
+                <img src="reports/license-badge-a11y.svg" alt="project license" height="30" width="150" ></img>
             </a>
-            <a href="https://github.com/OmarCastro/its-a-color-wheel" aria-label="go to Github repository" title="go to Github repository">
-                <img src="https://img.shields.io/github/v/release/OmarCastro/its-a-color-wheel?style=for-the-badge" alt="project version" height="30" width="150" ></img>
-            </a>
+            <a href="https://github.com/OmarCastro/its-a-color-wheel" aria-label="go to NPM package" title="go to Github repository"><picture>
+                <source srcset="https://img.shields.io/github/v/release/OmarCastro/its-a-color-wheel?style=for-the-badge&logoColor=%23ccc&color=%2306A" media="(prefers-color-scheme: dark)">
+                <img src="https://img.shields.io/github/v/release/OmarCastro/its-a-color-wheel?style=for-the-badge&logoColor=%23333&labelColor=%23ccc&color=%23007ec6">
+            </picture></a>
         </section>
 
         <section class="preview">
