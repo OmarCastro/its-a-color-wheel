@@ -17,19 +17,8 @@ let loadStyles = () => {
   return sheet
 }
 
-/**
-   *
-   * @param {ColorWheelElement} element
-   */
-function updateContainerClass (element) {
-  const container = element.shadowRoot.querySelector('.container')
-  const { uiMode } = element
-  container.classList.toggle('container--desktop-ui', uiMode === 'desktop')
-  container.classList.toggle('container--mobile-ui', uiMode === 'mobile')
-}
-
-const uiModeObserver = shadowDomCustomCssVariableObserver('--ui-mode', ({ target }) => updateContainerClass(target))
-const defaultUiModeObserver = shadowDomCustomCssVariableObserver('--default-ui-mode', ({ target }) => updateContainerClass(target))
+const uiModeObserver = shadowDomCustomCssVariableObserver('--ui-mode', ({ target }) => updateContainerUIModeClass(target))
+const defaultUiModeObserver = shadowDomCustomCssVariableObserver('--default-ui-mode', ({ target }) => updateContainerUIModeClass(target))
 
 class ColorWheelElement extends HTMLElement {
   constructor () {
@@ -47,7 +36,7 @@ class ColorWheelElement extends HTMLElement {
 
     uiModeObserver.observe(this)
     defaultUiModeObserver.observe(this)
-    updateContainerClass(this)
+    updateContainerUIModeClass(this)
     reflectLightness(this)
     reflectValue(this)
 
@@ -176,7 +165,7 @@ class ColorWheelElement extends HTMLElement {
   }
 
   get uiMode () {
-    const computedStyle = getComputedStyle(this.shadowRoot.querySelector('.container'))
+    const computedStyle = getComputedStyle(getContainer(this))
     const uiMode = cleanPropertyValue(computedStyle.getPropertyValue('--ui-mode'))
     switch (uiMode) {
       case 'desktop':
@@ -225,22 +214,37 @@ class ColorWheelElement extends HTMLElement {
 
 const getContainer = element => element.shadowRoot.querySelector('.container')
 const setContainerProperty = (element, property, value) => {
-  getContainer(element)?.style.setProperty(property, value)
+  getContainer(element).style.setProperty(property, value)
   return element
 }
 
+/**
+ *
+ * @param {ColorWheelElement} element - target element
+ */
+function updateContainerUIModeClass (element) {
+  const container = getContainer(element)
+  const { uiMode } = element
+  container.classList.toggle('container--desktop-ui', uiMode === 'desktop')
+  container.classList.toggle('container--mobile-ui', uiMode === 'mobile')
+}
+
+/**
+ * updates ColorWheelElement color view based on the data
+ * By default it used the HSV color scheme, it only uses HSL when only HSL attributes are defined
+ * @param {ColorWheelElement} element - target element
+ */
 function reflectHsl (element) {
   const container = getContainer(element)
   if (!container) { return }
   const setHSLMode = element.hasAttribute('lightness') && !element.hasAttribute('value')
   container.classList.toggle('container--hsl', setHSLMode)
-  return element
 }
 
 const reflectHue = element => setContainerProperty(element, '--hue', element.hue)
 const reflectSaturation = element => setContainerProperty(element, '--saturation', element.saturation)
-const reflectLightness = element => setContainerProperty(reflectHsl(element), '--lightness', element.lightness)
-const reflectValue = element => setContainerProperty(reflectHsl(element), '--value', element.value)
+const reflectLightness = element => ((reflectHsl(element), setContainerProperty(element, '--lightness', element.lightness)))
+const reflectValue = element => ((reflectHsl(element), setContainerProperty(element, '--value', element.value)))
 
 const url = new URL(import.meta.url)
 const elementName = url.searchParams.get('named')
