@@ -1,9 +1,12 @@
 # its-a-color-picker
 
-![Test coverage](https://omarcastro.github.io/its-a-color-wheel/coverage/final/coverage-badge.svg)
-![Test Result](https://omarcastro.github.io/its-a-color-wheel/test-results/test-results-badge.svg)
-![License](https://img.shields.io/github/license/OmarCastro/its-a-color-wheel?color=%23007700&style=for-the-badge)
-![Release version](https://img.shields.io/github/v/release/OmarCastro/its-a-color-wheel?style=for-the-badge)
+![Test coverage](https://omarcastro.github.io/its-a-color-wheel/reports/coverage/final/coverage-badge-a11y.svg)
+![Test Result](https://omarcastro.github.io/its-a-color-wheel/reports/test-results/test-results-badge-a11y.svg)
+![License](https://omarcastro.github.io/its-a-color-wheel/reports/license-badge-a11y.svg)
+<a href="https://www.npmjs.com/package/its-i18n" aria-label="go to NPM package" title="go to NPM package"><picture>
+<source srcset="https://img.shields.io/github/v/release/OmarCastro/its-a-color-wheel?style=for-the-badge&logoColor=%23ccc&color=%2306A" media="(prefers-color-scheme: dark)">
+<img src="https://img.shields.io/github/v/release/OmarCastro/its-a-color-wheel?style=for-the-badge&logoColor=%23333&labelColor=%23ccc&color=%23007ec6">
+</picture></a>
 
 full documentation on: https://omarcastro.github.io/its-a-color-wheel
 
