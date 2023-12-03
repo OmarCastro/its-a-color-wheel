@@ -1,14 +1,5 @@
-/** @type {WeakMap<HTMLElement, CachedObserverOption[]>} */
+/** @type {WeakMap<HTMLElement, ObserverOption[]>} */
 const observerOptionsMap = new WeakMap()
-
-const trimQuotesRegex = /^["'](.+(?=["']$))["']$/
-export const cleanPropertyValue = propValue => {
-  if (typeof propValue !== 'string') {
-    return ''
-  }
-  const trimmed = propValue.trim()
-  return trimmed.replace(trimQuotesRegex, '$1')
-}
 
 const resizeObserver = new ResizeObserver(entries => {
   const targets = new Set(entries.map(entry => entry.target))
@@ -25,7 +16,7 @@ const resizeObserver = new ResizeObserver(entries => {
           value: newValue,
         }
         option.currentPropertyValue = newValue
-        option.executeCallback(callbackOptions)
+        option.handler(callbackOptions)
       }
     })
   }
@@ -59,53 +50,82 @@ const createTemplate = (name) => {
 }
 
 /**
- *
- * @param {string} name
- * @param {function} callback
- * @returns {Observer}
+ * Creates an CSS variable observer
+ * @param {string} customPropertyName - custom property name to observe
+ * @param {ObserverCallback} callback - observer change callback handler
+ * @returns {Observer} created observer
  */
-export function shadowDomCustomCssVariableObserver (name, callback) {
-  const template = createTemplate(name)
+export function shadowDomCustomCssVariableObserver (customPropertyName, callback) {
+  const template = createTemplate(customPropertyName)
   return {
     observe: (element) => {
       const observerOptions = observerOptionsMap.get(element) || []
-      const observerOptionsWithName = observerOptions.filter(option => option.customPropertyName === name)
+      const observerOptionsWithName = observerOptions.filter(option => option.customPropertyName === customPropertyName)
 
       if (observerOptionsWithName.length <= 0) {
         element.shadowRoot.append(document.importNode(template.content, true))
-        const elementToObserve = element.shadowRoot.querySelector(`.css-watch-observer__${name}--target`)
+        const elementToObserve = element.shadowRoot.querySelector(`.css-watch-observer__${customPropertyName}--target`)
         resizeObserver.observe(elementToObserve)
       }
 
       observerOptionsMap.set(element, [...observerOptions, {
-        currentPropertyValue: cleanPropertyValue(getComputedStyle(element).getPropertyValue(name)),
-        executeCallback: callback,
-        customPropertyName: name,
+        currentPropertyValue: cleanPropertyValue(getComputedStyle(element).getPropertyValue(customPropertyName)),
+        handler: callback,
+        customPropertyName,
       }])
     },
 
     unobserve: (element) => {
       const observerOptions = observerOptionsMap.get(element) || []
-      const newObserverOptions = observerOptions.filter(option => option.executeCallback !== callback || option.customPropertyName !== name)
-      const newObserverOptionsWithName = newObserverOptions.filter(option => option.customPropertyName === name)
+      const newObserverOptions = observerOptions.filter(option => option.handler !== callback || option.customPropertyName !== customPropertyName)
+      const newObserverOptionsWithName = newObserverOptions.filter(option => option.customPropertyName === customPropertyName)
       if (newObserverOptionsWithName.length <= 0) {
-        const elementToObserve = element.shadowRoot.querySelector(`.css-watch-observer__${name}--target`)
+        const elementToObserve = element.shadowRoot.querySelector(`.css-watch-observer__${customPropertyName}--target`)
         resizeObserver.unobserve(elementToObserve)
-        element.shadowRoot.querySelectorAll(`.css-watch-observer__${name}`).forEach(el => el.remove())
+        element.shadowRoot.querySelectorAll(`.css-watch-observer__${customPropertyName}`).forEach(el => el.remove())
       }
       observerOptionsMap.set(element, newObserverOptions)
     },
   }
 }
 
+const TRIM_QUOTES_REGEX = /^["'](.+(?=["']$))["']$/
+
+/**
+ * Cleans custom property value, they are strings, so the quotes are included.
+ * This function simply converts CSS string value to JS string
+ * @param {string} propValue - CSS value
+ * @returns {string} CSS string value as JS string
+ */
+export function cleanPropertyValue (propValue) {
+  if (typeof propValue !== 'string') {
+    return ''
+  }
+  const trimmed = propValue.trim()
+  return trimmed.replace(TRIM_QUOTES_REGEX, '$1')
+}
+
 /**
  * @typedef {object} ObserverOption
- * @property {string[]} acceptValues
- * @property {function} executeCallback
- * @property {string} currentPropertyValue
- * @property {string} customPropertyName
- *
+ * @property {ObserverCallback} handler - observer change callback handler
+ * @property {string} currentPropertyValue - current value of CSS custom property
+ * @property {string} customPropertyName - observing CSS custom property
+ */
+
+/**
+ * @callback ObserverCallback
+ * @param {ObserverEvent} event
+ */
+
+/**
+ * @typedef {object} ObserverEvent
+ * @property {HTMLElement} target - observing element
+ * @property {string} previousValue - previous value
+ * @property {string} value - updated value
+ */
+
+/**
  * @typedef {object} Observer
- * @property {(element: HTMLElement) => void} observe
- * @property {(element: HTMLElement) => void} unobserve
- * */
+ * @property {(element: HTMLElement) => void} observe - observe an element
+ * @property {(element: HTMLElement) => void} unobserve - unobserve an element
+ */
