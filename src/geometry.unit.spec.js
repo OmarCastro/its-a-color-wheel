@@ -1,7 +1,5 @@
-// @ts-ignore
 import { test } from '../test-utils/unit/test.ts';
-// @ts-ignore
-import { CircleInfo, calculateDistanceBetween2Points } from './geometry.ts';
+import { CircleInfo, calculateDistanceBetween2Points } from './geometry.js';
 
 
 test('CircleInfo.fromRectWithPercentInnerRadius', async ({step, expect}) => {

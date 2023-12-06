@@ -1,4 +1,4 @@
-import { test, expect } from '../test-utils/ui-tests.ts'
+import { test, expect } from '../test-utils/ui-tests.js'
 
 test('base test visual testing', async ({ page }) => {
   await page.goto('./build/docs/test-page.html');
@@ -67,8 +67,8 @@ test('slider should follow mouse position when dragging the mouse in desktop mod
     y: colorWheelBoundingBox.y + colorWheelBoundingBox.height / 2
   }
 
-  const getSturation = async () => await colorWheelElement.evaluate(node => parseInt(node.getAttribute("saturation") as string))
-  const getHue = async () => await colorWheelElement.evaluate(node => parseInt(node.getAttribute("hue") as string))
+  const getSturation = async () => await colorWheelElement.evaluate(node => parseInt(node.getAttribute("saturation")))
+  const getHue = async () => await colorWheelElement.evaluate(node => parseInt(node.getAttribute("hue")))
 
   await page.mouse.move(centerPoint.x, centerPoint.y)
   await page.mouse.down()
