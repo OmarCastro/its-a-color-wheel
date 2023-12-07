@@ -3,9 +3,10 @@
 import process from 'node:process'
 import fs from 'node:fs/promises'
 import { resolve, basename } from 'node:path'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { promisify } from 'node:util'
 import { execFile as baseExecFile, exec, spawn } from 'node:child_process'
+import { minify } from 'html-minifier'
 
 const execPromise = promisify(exec)
 const execFile = promisify(baseExecFile)
@@ -149,16 +150,38 @@ async function buildTest () {
   const commonBuildParams = {
     target: ['es2022'],
     bundle: true,
-    minify: true,
-    sourcemap: true,
+    minify: false,
+    sourcemap: false,
     absWorkingDir: pathFromProject('.'),
     logLevel: 'info',
   }
+
+  const minCss = await esbuild.transform(readFileSync('src/color-wheel.element.css').toString(), { loader: 'css', minify: true })
+  const minCssJs = await esbuild.transform(minCss.code, { loader: 'text', minify: true, format: 'esm' })
+  writeFileSync('src/color-wheel.element.css.generated.js', '// generated code from color-wheel.element.css \n' + minCssJs.code)
+
+  const minHtml = minify(readFileSync('src/color-wheel.element.html').toString(), {
+    removeAttributeQuotes: true,
+    useShortDoctype: true,
+    collapseWhitespace: true,
+  })
+  const minHtmlJs = await esbuild.transform(minHtml, { loader: 'text', minify: true, format: 'esm' })
+  writeFileSync('src/color-wheel.element.html.generated.js', '// generated code from color-wheel.element.html \n' + minHtmlJs.code)
 
   const esbuild1 = esbuild.build({
     ...commonBuildParams,
     entryPoints: ['src/color-wheel.element.js'],
     outfile: '.tmp/build/dist/color-wheel.element.min.js',
+    format: 'esm',
+    loader: {
+      '.element.html': 'text',
+      '.element.css': 'text',
+    },
+  })
+
+  const esbuild2Node = esbuild.build({
+    entryPoints: ['src/color-wheel.element.js'],
+    outdir: '.tmp/build/dist-node',
     format: 'esm',
     loader: {
       '.element.html': 'text',
@@ -185,7 +208,7 @@ async function buildTest () {
     outfile: '.tmp/build/docs/doc.css',
   })
 
-  await Promise.all([esbuild1, esbuild2, esbuild3])
+  await Promise.all([esbuild1, esbuild2, esbuild2Node, esbuild3])
 
   logStage('build test page html')
 

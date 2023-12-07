@@ -1,7 +1,7 @@
 import { calculateDistanceBetween2Points, CircleInfo } from './geometry.js'
 import { shadowDomCustomCssVariableObserver, cleanPropertyValue } from './observe-css-var.feature.js'
-import html from './color-wheel.element.html.generated.js'
-import css from './color-wheel.element.css.generated.js'
+import html from './color-wheel.element.html'
+import css from './color-wheel.element.css'
 
 let loadTemplate = () => {
   const templateElement = document.createElement('template')
@@ -64,7 +64,7 @@ class ColorWheelElement extends HTMLElement {
       const pointerBox = wheelContainer.getBoundingClientRect()
       const innerRadiusCSSValue = wheelStyle.getPropertyValue('--inner-radius').trim()
       if (/[0-9]+%/g.test(innerRadiusCSSValue)) {
-        const innerRadiusPerc = parseInt(innerRadiusCSSValue)
+        const innerRadiusPerc = parseFloat(innerRadiusCSSValue) & 1
         return CircleInfo.fromRectWithPercentInnerRadius(pointerBox, innerRadiusPerc)
       }
       const innerRadius = innerRadiusCalc.getBoundingClientRect().width
@@ -155,11 +155,12 @@ class ColorWheelElement extends HTMLElement {
           const deg = getAngle(e)
           const newHue = Math.round(-deg + 360 * 2 - 90) % 360
           this.hue = newHue
-          this.saturation = calculations.calculateSaturationFromMouseEvent(e)
+          const newSaturation = calculations.calculateSaturationFromMouseEvent(e)
+          this.saturation = newSaturation
           const event = new CustomEvent('input', { bubbles: true })
           this.dispatchEvent(event)
         }
-
+        rotateSlider(pointerEvent)
         initDrag(rotateSlider)
       }
     }
@@ -241,7 +242,7 @@ class ColorWheelElement extends HTMLElement {
   }
 
   get lightness () {
-    return getNumericValueFromAttribute(this, 'value', 50)
+    return getNumericValueFromAttribute(this, 'lightness', 50)
   }
 
   set lightness (lightness) {
