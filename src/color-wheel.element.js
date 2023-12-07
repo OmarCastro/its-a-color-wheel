@@ -1,7 +1,7 @@
 import { calculateDistanceBetween2Points, CircleInfo } from './geometry.js'
 import { shadowDomCustomCssVariableObserver, cleanPropertyValue } from './observe-css-var.feature.js'
-import html from './color-wheel.element.html'
-import css from './color-wheel.element.css'
+import html from './color-wheel.element.html.generated.js'
+import css from './color-wheel.element.css.generated.js'
 
 let loadTemplate = () => {
   const templateElement = document.createElement('template')
@@ -17,8 +17,15 @@ let loadStyles = () => {
   return sheet
 }
 
-const uiModeObserver = shadowDomCustomCssVariableObserver('--ui-mode', ({ target }) => updateContainerUIModeClass(target))
-const defaultUiModeObserver = shadowDomCustomCssVariableObserver('--default-ui-mode', ({ target }) => updateContainerUIModeClass(target))
+const uiModeObserver = shadowDomCustomCssVariableObserver('--ui-mode', ({ target }) => target instanceof ColorWheelElement && updateContainerUIModeClass(target))
+const defaultUiModeObserver = shadowDomCustomCssVariableObserver('--default-ui-mode', ({ target }) => target instanceof ColorWheelElement && updateContainerUIModeClass(target))
+/** @type {(shadowRoot: ParentNode | null, selector: string) => HTMLElement } */
+const queryRequired = (shadowRoot, selector) => {
+  if (!shadowRoot) { throw new Error(`Color-wheel: Error from shadowDOM: parent node is ${shadowRoot}`) }
+  const result = shadowRoot.querySelector(selector)
+  if (!result || !(result instanceof HTMLElement)) { throw new Error(`Color-wheel: Error from shadowDOM: html element "${selector}" not found`) }
+  return result
+}
 
 class ColorWheelElement extends HTMLElement {
   constructor () {
@@ -28,10 +35,14 @@ class ColorWheelElement extends HTMLElement {
     const template = loadTemplate()
 
     shadowRoot.append(document.importNode(template.content, true))
-    const wheelContainer = shadowRoot.querySelector('.color-wheel-container')
-    const innerRadiusCalc = shadowRoot.querySelector('.inner-radius-calc')
-    const wheel = shadowRoot.querySelector('.color-wheel')
-    const slider = shadowRoot.querySelector('.slider')
+    const fromShadowRoot = queryRequired.bind(null, shadowRoot)
+    const wheelContainer = fromShadowRoot('.color-wheel-container')
+    const innerRadiusCalc = fromShadowRoot('.inner-radius-calc')
+    const wheel = fromShadowRoot('.color-wheel')
+    const slider = fromShadowRoot('.slider')
+    if (!wheelContainer || !innerRadiusCalc) {
+      throw new Error('Error loading Color-wheel: ".color-wheel-container", ".inner-radius-calc", ".color-wheel" or  not found')
+    }
     const wheelStyle = window.getComputedStyle(wheel)
 
     uiModeObserver.observe(this)
@@ -60,11 +71,18 @@ class ColorWheelElement extends HTMLElement {
       return CircleInfo.fromRectWithInnerRadius(pointerBox, innerRadius)
     }
 
+    /**
+     * Inits drag event, calling `callback` until it finishes, preventing default event and propagation during the operation
+     * @param {(event: PointerEvent) => void} callback - callback to execute
+     */
     const initDrag = (callback) => {
+      const window = this.ownerDocument.defaultView
+      if (!window) { return }
+      /** @param {PointerEvent} e - event to pass to `callback` */
       const defaultPrevented = e => { e.preventDefault(); e.stopPropagation(); callback(e) }
-      globalThis.addEventListener('pointermove', defaultPrevented, { capture: true })
-      globalThis.addEventListener('pointerup', () => {
-        globalThis.removeEventListener('pointermove', defaultPrevented, { capture: true })
+      window.addEventListener('pointermove', defaultPrevented, { capture: true })
+      window.addEventListener('pointerup', () => {
+        window.removeEventListener('pointermove', defaultPrevented, { capture: true })
       }, { once: true, capture: true })
     }
 
@@ -76,6 +94,9 @@ class ColorWheelElement extends HTMLElement {
       },
     })
 
+    /**
+     * Init slider drag and drop
+     */
     const initSliderDrag = () => {
       const centerPoint = getWheelCenterPoint()
       const calculations = fromCenterPointAndRadius({
@@ -83,6 +104,7 @@ class ColorWheelElement extends HTMLElement {
         centerPoint,
       })
 
+      /** @param {PointerEvent} e - pointermove event */
       const slideSaturation = (e) => {
         this.saturation = calculations.calculateSaturationFromMouseEvent({
           clientX: centerPoint.x,
@@ -94,7 +116,8 @@ class ColorWheelElement extends HTMLElement {
       initDrag(slideSaturation)
     }
 
-    const initWheelDrag = (clientCoordinates) => {
+    /** @param {PointerEvent} pointerEvent - pointerdown event */
+    const initWheelDrag = (pointerEvent) => {
       const centerPoint = getWheelCenterPoint()
       const { hue } = this
       const calculations = fromCenterPointAndRadius({
@@ -102,6 +125,10 @@ class ColorWheelElement extends HTMLElement {
         centerPoint,
       })
 
+      /**
+       * @param {PointerEvent} e - pointermove event
+       * @returns theta value in degrees
+       */
       const getAngle = (e) => {
         const deltaX = e.clientX - centerPoint.x
         const deltaY = centerPoint.y - e.clientY
@@ -109,10 +136,11 @@ class ColorWheelElement extends HTMLElement {
         return thetaRadians * -180 / Math.PI
       }
 
-      const initDeg = getAngle(clientCoordinates)
+      const initDeg = getAngle(pointerEvent)
       const uiMode = this.uiMode
 
       if ((uiMode || '').trim() === 'mobile') {
+        /** @param {PointerEvent} e - pointermove event */
         const rotateWheel = (e) => {
           const deg = getAngle(e)
           const newHue = Math.round(deg - initDeg + hue + 360) % 360
@@ -122,6 +150,7 @@ class ColorWheelElement extends HTMLElement {
         }
         initDrag(rotateWheel)
       } else {
+        /** @param {PointerEvent} e - pointermove event */
         const rotateSlider = (e) => {
           const deg = getAngle(e)
           const newHue = Math.round(-deg + 360 * 2 - 90) % 360
@@ -138,7 +167,7 @@ class ColorWheelElement extends HTMLElement {
     wheel.addEventListener('pointerdown', (event) => {
       event.preventDefault()
       event.stopPropagation()
-      initWheelDrag(event)
+      initWheelDrag(/** @type {PointerEvent} */ (event))
     })
 
     slider.addEventListener('pointerdown', (event) => {
@@ -146,21 +175,33 @@ class ColorWheelElement extends HTMLElement {
       event.stopPropagation()
       initSliderDrag()
     })
-
-    reflectSaturation(reflectHue(this))
+    reflectHue(this)
+    reflectSaturation(this)
   }
 
   static get observedAttributes () {
     return ['saturation', 'hue', 'lightness', 'value']
   }
 
+  /**
+   * @param {string} name - changed attribute name
+   * @param {string} oldValue - old attribute value
+   * @param {string} newValue - new attribute value
+   */
   attributeChangedCallback (name, oldValue, newValue) {
     if (oldValue === newValue) return
     switch (name) {
-      case 'saturation': return reflectSaturation(this)
-      case 'hue': return reflectHue(this)
-      case 'lightness': return reflectLightness(this)
-      case 'value': return reflectValue(this)
+      case 'saturation':
+        reflectSaturation(this)
+        return
+      case 'hue':
+        reflectHue(this)
+        return
+      case 'lightness':
+        reflectLightness(this)
+        return
+      case 'value':
+        reflectValue(this)
     }
   }
 
@@ -176,47 +217,63 @@ class ColorWheelElement extends HTMLElement {
   }
 
   get hue () {
-    const asInt = parseInt(this.getAttribute('hue'))
-    return isNaN(asInt) ? 0 : asInt
+    return getNumericValueFromAttribute(this, 'hue', 0)
   }
 
   set hue (hue) {
-    this.setAttribute('hue', hue)
+    this.setAttribute('hue', String(hue))
   }
 
   get saturation () {
-    const asInt = parseInt(this.getAttribute('saturation'))
-    return isNaN(asInt) ? 0 : asInt
+    return getNumericValueFromAttribute(this, 'saturation', 0)
   }
 
   set saturation (saturation) {
-    this.setAttribute('saturation', saturation)
+    this.setAttribute('saturation', String(saturation))
   }
 
   get value () {
-    const asInt = parseInt(this.getAttribute('value'))
-    return isNaN(asInt) ? 100 : asInt
+    return getNumericValueFromAttribute(this, 'value', 100)
   }
 
   set value (value) {
-    this.setAttribute('value', value)
+    this.setAttribute('value', String(value))
   }
 
   get lightness () {
-    const asInt = parseInt(this.getAttribute('lightness'))
-    return isNaN(asInt) ? 50 : asInt
+    return getNumericValueFromAttribute(this, 'value', 50)
   }
 
   set lightness (lightness) {
-    this.setAttribute('lightness', lightness)
+    this.setAttribute('lightness', String(lightness))
   }
 }
 
-const getContainer = element => element.shadowRoot.querySelector('.container')
-const setContainerProperty = (element, property, value) => {
-  getContainer(element).style.setProperty(property, value)
-  return element
+/**
+ * @param {ColorWheelElement} element - target Element
+ * @param {string} attribute - attribute
+ * @param {number} defaultValue - default value
+ * @returns {number} - numeric value, or default if not defined or invalid
+ */
+function getNumericValueFromAttribute (element, attribute, defaultValue) {
+  const value = element.getAttribute(attribute)
+  if (!value) { return defaultValue }
+  const asInt = parseInt(value)
+  return isNaN(asInt) ? defaultValue : asInt
 }
+
+/**
+ * @param {ColorWheelElement} element - target element
+ * @returns {HTMLElement} container element
+ */
+const getContainer = element => queryRequired(element.shadowRoot, '.container')
+
+/**
+ * @param {ColorWheelElement} element - target element
+ * @param {string} property - css
+ * @param {string | number} value - new valuw
+ */
+const setContainerProperty = (element, property, value) => { getContainer(element).style.setProperty(property, String(value)) }
 
 /**
  *
@@ -241,10 +298,14 @@ function reflectHsl (element) {
   container.classList.toggle('container--hsl', setHSLMode)
 }
 
-const reflectHue = element => setContainerProperty(element, '--hue', element.hue)
-const reflectSaturation = element => setContainerProperty(element, '--saturation', element.saturation)
-const reflectLightness = element => ((reflectHsl(element), setContainerProperty(element, '--lightness', element.lightness)))
-const reflectValue = element => ((reflectHsl(element), setContainerProperty(element, '--value', element.value)))
+/** @param {ColorWheelElement} element - target element */
+const reflectHue = element => { setContainerProperty(element, '--hue', element.hue) }
+/** @param {ColorWheelElement} element - target element */
+const reflectSaturation = element => { setContainerProperty(element, '--saturation', element.saturation) }
+/** @param {ColorWheelElement} element - target element */
+const reflectLightness = element => { reflectHsl(element); setContainerProperty(element, '--lightness', element.lightness) }
+/** @param {ColorWheelElement} element - target element */
+const reflectValue = element => { reflectHsl(element); setContainerProperty(element, '--value', element.value) }
 
 const url = new URL(import.meta.url)
 const elementName = url.searchParams.get('named')
