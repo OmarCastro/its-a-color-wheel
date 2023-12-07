@@ -84,6 +84,22 @@ async function main () {
   return process.exit(0)
 }
 
+/** @type {import("esbuild").Plugin} */
+const nodeAssetsPlugin = {
+  name: 'nodeAsseets',
+  setup (build) {
+    build.onLoad({ filter: /\.js$/ }, async (args) => {
+      const text = await fs.readFile(args.path, 'utf8')
+      const updatedText = text
+        .replace(/\.element\.html/, '.element.html.generated.js')
+        .replace(/\.element\.css/, '.element.css.generated.js')
+      return {
+        contents: updatedText,
+      }
+    })
+  },
+}
+
 await main()
 
 async function execDevEnvironment ({ openBrowser = false } = {}) {
@@ -156,37 +172,47 @@ async function buildTest () {
     logLevel: 'info',
   }
 
-  const minCss = await esbuild.transform(readFileSync('src/color-wheel.element.css').toString(), { loader: 'css', minify: true })
-  const minCssJs = await esbuild.transform(minCss.code, { loader: 'text', minify: true, format: 'esm' })
-  writeFileSync('src/color-wheel.element.css.generated.js', '// generated code from color-wheel.element.css \n' + minCssJs.code)
+  const fileList = await listNonIgnoredFiles({ patterns: ['src/**/!(*.spec).js'] })
 
-  const minHtml = minify(readFileSync('src/color-wheel.element.html').toString(), {
-    removeAttributeQuotes: true,
-    useShortDoctype: true,
-    collapseWhitespace: true,
+  const esbuild2Node = esbuild.build({
+    entryPoints: fileList,
+    outdir: '.tmp/build/dist/js',
+    format: 'esm',
+    target: ['es2022'],
+    absWorkingDir: pathFromProject('.'),
+    loader: {
+      '.element.html': 'text',
+      '.element.css': 'text',
+    },
+    plugins: [nodeAssetsPlugin],
   })
-  const minHtmlJs = await esbuild.transform(minHtml, { loader: 'text', minify: true, format: 'esm' })
-  writeFileSync('src/color-wheel.element.html.generated.js', '// generated code from color-wheel.element.html \n' + minHtmlJs.code)
+
+  const fileListCSS = await listNonIgnoredFiles({ patterns: ['src/**/*.element.css'] })
+  await Promise.all(fileListCSS.map(async (path) => {
+    const minCss = await esbuild.transform(readFileSync(path).toString(), { loader: 'css', minify: true })
+    const minCssJs = await esbuild.transform(minCss.code, { loader: 'text', minify: true, format: 'esm' })
+    const noSrcPath = path.split('/').slice(1).join('/')
+    return fs.writeFile(`.tmp/build/dist/js/${noSrcPath}.generated.js`, `// generated code from ${noSrcPath}\n${minCssJs.code}`)
+  }))
+
+  const fileListHtml = await listNonIgnoredFiles({ patterns: ['src/**/*.element.html'] })
+  await Promise.all(fileListHtml.map(async (path) => {
+    const html = readFileSync(path).toString()
+    const minHtml = minify(html, {
+      removeAttributeQuotes: true,
+      useShortDoctype: true,
+      collapseWhitespace: true,
+    })
+    const minHtmlJs = await esbuild.transform(minHtml, { loader: 'text', minify: true, format: 'esm' })
+    const noSrcPath = path.split('/').slice(1).join('/')
+    return fs.writeFile(`.tmp/build/dist/js/${noSrcPath}.generated.js`, `// generated code from ${noSrcPath}\n${minHtmlJs.code}`)
+  }))
 
   const esbuild1 = esbuild.build({
     ...commonBuildParams,
-    entryPoints: ['src/color-wheel.element.js'],
+    entryPoints: ['.tmp/build/dist/js/color-wheel.element.js'],
     outfile: '.tmp/build/dist/color-wheel.element.min.js',
     format: 'esm',
-    loader: {
-      '.element.html': 'text',
-      '.element.css': 'text',
-    },
-  })
-
-  const esbuild2Node = esbuild.build({
-    entryPoints: ['src/color-wheel.element.js'],
-    outdir: '.tmp/build/dist-node',
-    format: 'esm',
-    loader: {
-      '.element.html': 'text',
-      '.element.css': 'text',
-    },
   })
 
   const esbuild2 = esbuild.build({

@@ -1,6 +1,8 @@
 import { calculateDistanceBetween2Points, CircleInfo } from './geometry.js'
 import { shadowDomCustomCssVariableObserver, cleanPropertyValue } from './observe-css-var.feature.js'
+// @ts-ignore
 import html from './color-wheel.element.html'
+// @ts-ignore
 import css from './color-wheel.element.css'
 
 let loadTemplate = () => {
