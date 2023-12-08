@@ -156,65 +156,51 @@ async function buildTest () {
     logLevel: 'info',
   }
 
-  const esmDistPath = '.tmp/build/dist/esm'
+  const buildPath = 'build'
+  const esmDistPath = `${buildPath}/dist/esm`
+  const minDistPath = `${buildPath}/dist`
+  const docsPath = `${buildPath}/docs`
+  const docsDistPath = `${docsPath}/dist`
+  const docsEsmDistPath = `${docsPath}/dist/esm`
 
-  const fileListJS = await listNonIgnoredFiles({ patterns: ['src/**/!(*.spec).js'] })
-  const fileListJsJob = fileListJS.map(async (path) => {
-    const js = readFileSync(path).toString()
-    const updatedJs = js
-      .replaceAll('.element.html"', '.element.html.generated.js"')
-      .replaceAll(".element.html'", ".element.html.generated.js'")
-      .replaceAll('.element.css"', '.element.css.generated.js"')
-      .replaceAll(".element.css'", ".element.css.generated.js'")
-      .replaceAll('\n// @ts-ignore', '')
+  await buildESM(esmDistPath)
+  await buildESM(docsEsmDistPath)
 
-    const noSrcPath = path.split('/').slice(1).join('/')
-    const outfile = pathFromProject(`${esmDistPath}/${noSrcPath}`)
-    const outdir = dirname(outfile)
-    if (!existsSync(outdir)) { await mkdir_p(outdir) }
-    return fs.writeFile(outfile, updatedJs)
-  })
-
-  const fileListCSS = await listNonIgnoredFiles({ patterns: ['src/**/*.element.css'] })
-  const fileListCssJob = fileListCSS.map(async (path) => {
-    const minCss = await esbuild.transform(readFileSync(path).toString(), { loader: 'css', minify: true })
-    const minCssJs = await esbuild.transform(minCss.code, { loader: 'text', format: 'esm' })
-    const noSrcPath = path.split('/').slice(1).join('/')
-    const outfile = pathFromProject(`${esmDistPath}/${noSrcPath}.generated.js`)
-    const outdir = dirname(outfile)
-    if (!existsSync(outdir)) { await mkdir_p(outdir) }
-    return fs.writeFile(outfile, `// generated code from ${path}\n${minCssJs.code}`)
-  })
-
-  const fileListHtml = await listNonIgnoredFiles({ patterns: ['src/**/*.element.html'] })
-  const fileListHtmlJob = fileListHtml.map(async (path) => {
-    const html = readFileSync(path).toString()
-    const minHtml = minify(html, {
-      removeAttributeQuotes: true,
-      useShortDoctype: true,
-      collapseWhitespace: true,
-    })
-    const minHtmlJs = await esbuild.transform(minHtml, { loader: 'text', format: 'esm' })
-    const noSrcPath = path.split('/').slice(1).join('/')
-    const outfile = pathFromProject(`${esmDistPath}/${noSrcPath}.generated.js`)
-    const outdir = dirname(outfile)
-    if (!existsSync(outdir)) { await mkdir_p(outdir) }
-    return fs.writeFile(outfile, `// generated code from ${path}\n${minHtmlJs.code}`)
-  })
-
-  await Promise.all([fileListJsJob, fileListCssJob, fileListHtmlJob])
-
-  const esbuild1 = esbuild.build({
+  /**
+   * Builds minified files mapped from ESM, as it is most likely used in production.
+   */
+  const buildDistFromEsm = esbuild.build({
     ...commonBuildParams,
     entryPoints: [`${esmDistPath}/color-wheel.element.js`],
-    outfile: '.tmp/build/dist/color-wheel.element.min.js',
+    outfile: `${minDistPath}/color-wheel.element.min.js`,
     format: 'esm',
+    sourcemap: true,
+    minify: true,
   })
 
-  const esbuild2 = esbuild.build({
+  /**
+   * Builds minified files mapped from the original source code.
+   * This will the correct mapping to the original code path. With
+   * it the test code coverage will be correct when merging unit tests
+   * and UI tests.
+   */
+  const buildDocsDist = esbuild.build({
+    ...commonBuildParams,
+    entryPoints: ['src/color-wheel.element.js'],
+    outfile: `${docsDistPath}/color-wheel.element.min.js`,
+    format: 'esm',
+    sourcemap: true,
+    minify: true,
+    plugins: [await getESbuildPlugin()],
+  })
+
+  /**
+   * Builds documentation specific JS code
+   */
+  const buildDocsJS = esbuild.build({
     ...commonBuildParams,
     entryPoints: ['docs/doc.js'],
-    outdir: '.tmp/build/docs',
+    outdir: docsPath,
     splitting: true,
     chunkNames: 'chunk/[name].[hash]',
     format: 'esm',
@@ -224,23 +210,22 @@ async function buildTest () {
     },
   })
 
-  const esbuild3 = esbuild.build({
+  /**
+   * Builds documentation styles
+   */
+  const buildDocsStyles = esbuild.build({
     ...commonBuildParams,
     entryPoints: ['docs/doc.css'],
-    outfile: '.tmp/build/docs/doc.css',
+    outfile: `${docsPath}/doc.css`,
   })
 
-  await Promise.all([esbuild1, esbuild2, esbuild3])
+  await Promise.all([buildDistFromEsm, buildDocsDist, buildDocsJS, buildDocsStyles])
 
   logStage('build test page html')
 
   await execPromise(`${process.argv[0]} buildfiles/scripts/build-html.js test-page.html`)
 
   logStage('move to final dir')
-
-  await rm_rf('build')
-  await cp_R('.tmp/build', 'build')
-  await cp_R('build/dist', 'build/docs/dist')
   logEndStage()
 }
 
@@ -257,6 +242,91 @@ async function buildDocs () {
 
   await cp_R('.tmp/build', 'build')
   logEndStage()
+}
+
+/**
+ * @param {string} outputDir
+ */
+async function buildESM (outputDir) {
+  const esbuild = await import('esbuild')
+
+  const fileListJS = await listNonIgnoredFiles({ patterns: ['src/**/!(*.spec).js'] })
+  const fileListJsJob = fileListJS.map(async (path) => {
+    const js = readFileSync(path).toString()
+    const updatedJs = js
+      .replaceAll('.element.html"', '.element.html.generated.js"')
+      .replaceAll(".element.html'", ".element.html.generated.js'")
+      .replaceAll('.element.css"', '.element.css.generated.js"')
+      .replaceAll(".element.css'", ".element.css.generated.js'")
+
+    const noSrcPath = path.split('/').slice(1).join('/')
+    const outfile = pathFromProject(`${outputDir}/${noSrcPath}`)
+    const outdir = dirname(outfile)
+    if (!existsSync(outdir)) { await mkdir_p(outdir) }
+    return fs.writeFile(outfile, updatedJs)
+  })
+
+  const fileListCSS = await listNonIgnoredFiles({ patterns: ['src/**/*.element.css'] })
+  const fileListCssJob = fileListCSS.map(async (path) => {
+    const minCss = await minifyCss(await fs.readFile(path, 'utf8'))
+    const minCssJs = await esbuild.transform(minCss, { loader: 'text', format: 'esm' })
+    const noSrcPath = path.split('/').slice(1).join('/')
+    const outfile = pathFromProject(`${outputDir}/${noSrcPath}.generated.js`)
+    const outdir = dirname(outfile)
+    if (!existsSync(outdir)) { await mkdir_p(outdir) }
+    return fs.writeFile(outfile, `// generated code from ${path}\n${minCssJs.code}`)
+  })
+
+  const fileListHtml = await listNonIgnoredFiles({ patterns: ['src/**/*.element.html'] })
+  const fileListHtmlJob = fileListHtml.map(async (path) => {
+    const minHtml = minifyHtml(await fs.readFile(path, 'utf8'))
+    const minHtmlJs = await esbuild.transform(minHtml, { loader: 'text', format: 'esm' })
+    const noSrcPath = path.split('/').slice(1).join('/')
+    const outfile = pathFromProject(`${outputDir}/${noSrcPath}.generated.js`)
+    const outdir = dirname(outfile)
+    if (!existsSync(outdir)) { await mkdir_p(outdir) }
+    return fs.writeFile(outfile, `// generated code from ${path}\n${minHtmlJs.code}`)
+  })
+
+  await Promise.all([...fileListJsJob, ...fileListCssJob, ...fileListHtmlJob])
+}
+/**
+ * @returns {Promise<import('esbuild').Plugin>} - esbuild plugin
+ */
+async function getESbuildPlugin () {
+  return {
+    name: 'assetsBuid',
+    async setup (build) {
+      build.onLoad({ filter: /\.element.css$/ }, async (args) => {
+        return {
+          contents: await minifyCss(await fs.readFile(args.path, 'utf8')),
+          loader: 'text',
+        }
+      })
+
+      build.onLoad({ filter: /\.element.html$/ }, async (args) => {
+        return {
+          contents: minifyHtml(await fs.readFile(args.path, 'utf8')),
+          loader: 'text',
+        }
+      })
+    },
+
+  }
+}
+
+function minifyHtml (htmlText) {
+  return minify(htmlText, {
+    removeAttributeQuotes: true,
+    useShortDoctype: true,
+    collapseWhitespace: true,
+  })
+}
+
+async function minifyCss (cssText) {
+  const esbuild = await import('esbuild')
+  const result = await esbuild.transform(cssText, { loader: 'css', minify: true })
+  return result.code
 }
 
 async function execBuild () {
