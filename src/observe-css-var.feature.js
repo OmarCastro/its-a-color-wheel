@@ -4,9 +4,12 @@ const observerOptionsMap = new WeakMap()
 const resizeObserver = new ResizeObserver(entries => {
   const targets = new Set(entries.map(entry => entry.target))
   for (const target of targets) {
-    const host = target.getRootNode().host
+    const rootNode = target.getRootNode()
+    if (!(rootNode instanceof ShadowRoot)) { continue }
+    const host = rootNode.host
+    if (!(host instanceof HTMLElement)) { continue }
     const options = observerOptionsMap.get(host)
-    options.forEach(option => {
+    options && options.forEach(option => {
       const computedStyle = getComputedStyle(host)
       const newValue = cleanPropertyValue(computedStyle.getPropertyValue(option.customPropertyName))
       if (option.currentPropertyValue !== newValue) {
@@ -22,9 +25,14 @@ const resizeObserver = new ResizeObserver(entries => {
   }
 })
 
+/** @type {{[name: string]: HTMLTemplateElement}} */
 const templateCache = {}
 
-const createTemplate = (name) => {
+/**
+ * @param {string} name - css property name
+ * @returns {HTMLTemplateElement} template
+ */
+function cssPropertyTemplate (name) {
   if (!templateCache[name]) {
     const template = document.createElement('template')
     template.innerHTML = `<style class="css-watch-observer__${name}">
@@ -56,16 +64,16 @@ const createTemplate = (name) => {
  * @returns {Observer} created observer
  */
 export function shadowDomCustomCssVariableObserver (customPropertyName, callback) {
-  const template = createTemplate(customPropertyName)
+  const template = cssPropertyTemplate(customPropertyName)
   return {
     observe: (element) => {
       const observerOptions = observerOptionsMap.get(element) || []
       const observerOptionsWithName = observerOptions.filter(option => option.customPropertyName === customPropertyName)
 
       if (observerOptionsWithName.length <= 0) {
-        element.shadowRoot.append(document.importNode(template.content, true))
-        const elementToObserve = element.shadowRoot.querySelector(`.css-watch-observer__${customPropertyName}--target`)
-        resizeObserver.observe(elementToObserve)
+        element.shadowRoot?.append(document.importNode(template.content, true))
+        const elementToObserve = element.shadowRoot?.querySelector(`.css-watch-observer__${customPropertyName}--target`)
+        elementToObserve && resizeObserver.observe(elementToObserve)
       }
 
       observerOptionsMap.set(element, [...observerOptions, {
@@ -80,9 +88,9 @@ export function shadowDomCustomCssVariableObserver (customPropertyName, callback
       const newObserverOptions = observerOptions.filter(option => option.handler !== callback || option.customPropertyName !== customPropertyName)
       const newObserverOptionsWithName = newObserverOptions.filter(option => option.customPropertyName === customPropertyName)
       if (newObserverOptionsWithName.length <= 0) {
-        const elementToObserve = element.shadowRoot.querySelector(`.css-watch-observer__${customPropertyName}--target`)
-        resizeObserver.unobserve(elementToObserve)
-        element.shadowRoot.querySelectorAll(`.css-watch-observer__${customPropertyName}`).forEach(el => el.remove())
+        const elementToObserve = element.shadowRoot?.querySelector(`.css-watch-observer__${customPropertyName}--target`)
+        elementToObserve && resizeObserver.unobserve(elementToObserve)
+        element.shadowRoot?.querySelectorAll(`.css-watch-observer__${customPropertyName}`).forEach(el => el.remove())
       }
       observerOptionsMap.set(element, newObserverOptions)
     },
