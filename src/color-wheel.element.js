@@ -1,8 +1,6 @@
 import { calculateDistanceBetween2Points, CircleInfo } from './geometry.js'
 import { shadowDomCustomCssVariableObserver, cleanPropertyValue } from './observe-css-var.feature.js'
-// @ts-ignore
 import html from './color-wheel.element.html'
-// @ts-ignore
 import css from './color-wheel.element.css'
 
 let loadTemplate = () => {
@@ -66,7 +64,7 @@ class ColorWheelElement extends HTMLElement {
       const pointerBox = wheelContainer.getBoundingClientRect()
       const innerRadiusCSSValue = wheelStyle.getPropertyValue('--inner-radius').trim()
       if (/[0-9]+%/g.test(innerRadiusCSSValue)) {
-        const innerRadiusPerc = parseFloat(innerRadiusCSSValue) & 1
+        const innerRadiusPerc = parseFloat(innerRadiusCSSValue)
         return CircleInfo.fromRectWithPercentInnerRadius(pointerBox, innerRadiusPerc)
       }
       const innerRadius = innerRadiusCalc.getBoundingClientRect().width
@@ -88,30 +86,21 @@ class ColorWheelElement extends HTMLElement {
       }, { once: true, capture: true })
     }
 
-    const fromCenterPointAndRadius = ({ centerPoint, innerRadiusPerc, radius }) => ({
-      calculateSaturationFromMouseEvent (event) {
-        const r = calculateDistanceBetween2Points(centerPoint, { x: event.clientX, y: event.clientY })
-        const rperc = Math.min(100, Math.max(0, r * 100 / radius))
-        return Math.round(Math.min(100, Math.max(0, (rperc - innerRadiusPerc) * 100 / (100 - innerRadiusPerc))))
-      },
-    })
-
     /**
      * Init slider drag and drop
      */
     const initSliderDrag = () => {
       const centerPoint = getWheelCenterPoint()
-      const calculations = fromCenterPointAndRadius({
-        ...getRadiusValues(),
-        centerPoint,
-      })
+      const disk = getRadiusValues()
 
       /** @param {PointerEvent} e - pointermove event */
       const slideSaturation = (e) => {
-        this.saturation = calculations.calculateSaturationFromMouseEvent({
-          clientX: centerPoint.x,
-          clientY: Math.min(centerPoint.y, e.clientY),
-        })
+        const saturationPoint = {
+          x: centerPoint.x,
+          y: Math.min(centerPoint.y, e.clientY),
+        }
+        const newSaturation = calculateSaturation(disk, saturationPoint)
+        this.saturation = newSaturation
         const event = new CustomEvent('input', { bubbles: true })
         this.dispatchEvent(event)
       }
@@ -121,15 +110,13 @@ class ColorWheelElement extends HTMLElement {
     /** @param {PointerEvent} pointerEvent - pointerdown event */
     const initWheelDrag = (pointerEvent) => {
       const centerPoint = getWheelCenterPoint()
+      const disk = getRadiusValues()
+
       const { hue } = this
-      const calculations = fromCenterPointAndRadius({
-        ...getRadiusValues(),
-        centerPoint,
-      })
 
       /**
        * @param {PointerEvent} e - pointermove event
-       * @returns theta value in degrees
+       * @returns {number} theta value in degrees
        */
       const getAngle = (e) => {
         const deltaX = e.clientX - centerPoint.x
@@ -157,7 +144,8 @@ class ColorWheelElement extends HTMLElement {
           const deg = getAngle(e)
           const newHue = Math.round(-deg + 360 * 2 - 90) % 360
           this.hue = newHue
-          const newSaturation = calculations.calculateSaturationFromMouseEvent(e)
+          const clientPoint = { x: e.clientX, y: e.clientY }
+          const newSaturation = calculateSaturation(disk, clientPoint)
           this.saturation = newSaturation
           const event = new CustomEvent('input', { bubbles: true })
           this.dispatchEvent(event)
@@ -250,6 +238,19 @@ class ColorWheelElement extends HTMLElement {
   set lightness (lightness) {
     this.setAttribute('lightness', String(lightness))
   }
+}
+
+/**
+ * @param {import('./geometry.js').Disk} disk - color wheel geometry
+ * @param {import('./geometry.js').Point} point - target position
+ * @returns {number} saturation value, will not go below 0 or above 100
+ */
+function calculateSaturation (disk, point) {
+  const { center, radius, innerRadiusPerc } = disk
+  const r = calculateDistanceBetween2Points(center, point)
+  const rperc = Math.min(100, Math.max(0, r * 100 / radius))
+  const saturation = (rperc - innerRadiusPerc) * 100 / (100 - innerRadiusPerc)
+  return Math.round(Math.min(100, Math.max(0, saturation)))
 }
 
 /**
