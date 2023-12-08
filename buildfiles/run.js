@@ -2,8 +2,8 @@
 /* eslint-disable camelcase, max-lines-per-function, jsdoc/require-jsdoc, jsdoc/require-param-description */
 import process from 'node:process'
 import fs from 'node:fs/promises'
-import { resolve, basename } from 'node:path'
-import { existsSync, readFileSync, writeFileSync } from 'node:fs'
+import { resolve, basename, dirname } from 'node:path'
+import { existsSync, readFileSync } from 'node:fs'
 import { promisify } from 'node:util'
 import { execFile as baseExecFile, exec, spawn } from 'node:child_process'
 import { minify } from 'html-minifier'
@@ -84,22 +84,6 @@ async function main () {
   return process.exit(0)
 }
 
-/** @type {import("esbuild").Plugin} */
-const nodeAssetsPlugin = {
-  name: 'nodeAsseets',
-  setup (build) {
-    build.onLoad({ filter: /\.js$/ }, async (args) => {
-      const text = await fs.readFile(args.path, 'utf8')
-      const updatedText = text
-        .replace(/\.element\.html/, '.element.html.generated.js')
-        .replace(/\.element\.css/, '.element.css.generated.js')
-      return {
-        contents: updatedText,
-      }
-    })
-  },
-}
-
 await main()
 
 async function execDevEnvironment ({ openBrowser = false } = {}) {
@@ -172,45 +156,57 @@ async function buildTest () {
     logLevel: 'info',
   }
 
-  const fileList = await listNonIgnoredFiles({ patterns: ['src/**/!(*.spec).js'] })
+  const esmDistPath = '.tmp/build/dist/esm'
 
-  const esbuild2Node = esbuild.build({
-    entryPoints: fileList,
-    outdir: '.tmp/build/dist/js',
-    format: 'esm',
-    target: ['es2022'],
-    absWorkingDir: pathFromProject('.'),
-    loader: {
-      '.element.html': 'text',
-      '.element.css': 'text',
-    },
-    plugins: [nodeAssetsPlugin],
+  const fileListJS = await listNonIgnoredFiles({ patterns: ['src/**/!(*.spec).js'] })
+  const fileListJsJob = fileListJS.map(async (path) => {
+    const js = readFileSync(path).toString()
+    const updatedJs = js
+      .replaceAll('.element.html"', '.element.html.generated.js"')
+      .replaceAll(".element.html'", ".element.html.generated.js'")
+      .replaceAll('.element.css"', '.element.css.generated.js"')
+      .replaceAll(".element.css'", ".element.css.generated.js'")
+      .replaceAll('\n// @ts-ignore', '')
+
+    const noSrcPath = path.split('/').slice(1).join('/')
+    const outfile = pathFromProject(`${esmDistPath}/${noSrcPath}`)
+    const outdir = dirname(outfile)
+    if (!existsSync(outdir)) { await mkdir_p(outdir) }
+    return fs.writeFile(outfile, updatedJs)
   })
 
   const fileListCSS = await listNonIgnoredFiles({ patterns: ['src/**/*.element.css'] })
-  await Promise.all(fileListCSS.map(async (path) => {
+  const fileListCssJob = fileListCSS.map(async (path) => {
     const minCss = await esbuild.transform(readFileSync(path).toString(), { loader: 'css', minify: true })
-    const minCssJs = await esbuild.transform(minCss.code, { loader: 'text', minify: true, format: 'esm' })
+    const minCssJs = await esbuild.transform(minCss.code, { loader: 'text', format: 'esm' })
     const noSrcPath = path.split('/').slice(1).join('/')
-    return fs.writeFile(`.tmp/build/dist/js/${noSrcPath}.generated.js`, `// generated code from ${noSrcPath}\n${minCssJs.code}`)
-  }))
+    const outfile = pathFromProject(`${esmDistPath}/${noSrcPath}.generated.js`)
+    const outdir = dirname(outfile)
+    if (!existsSync(outdir)) { await mkdir_p(outdir) }
+    return fs.writeFile(outfile, `// generated code from ${path}\n${minCssJs.code}`)
+  })
 
   const fileListHtml = await listNonIgnoredFiles({ patterns: ['src/**/*.element.html'] })
-  await Promise.all(fileListHtml.map(async (path) => {
+  const fileListHtmlJob = fileListHtml.map(async (path) => {
     const html = readFileSync(path).toString()
     const minHtml = minify(html, {
       removeAttributeQuotes: true,
       useShortDoctype: true,
       collapseWhitespace: true,
     })
-    const minHtmlJs = await esbuild.transform(minHtml, { loader: 'text', minify: true, format: 'esm' })
+    const minHtmlJs = await esbuild.transform(minHtml, { loader: 'text', format: 'esm' })
     const noSrcPath = path.split('/').slice(1).join('/')
-    return fs.writeFile(`.tmp/build/dist/js/${noSrcPath}.generated.js`, `// generated code from ${noSrcPath}\n${minHtmlJs.code}`)
-  }))
+    const outfile = pathFromProject(`${esmDistPath}/${noSrcPath}.generated.js`)
+    const outdir = dirname(outfile)
+    if (!existsSync(outdir)) { await mkdir_p(outdir) }
+    return fs.writeFile(outfile, `// generated code from ${path}\n${minHtmlJs.code}`)
+  })
+
+  await Promise.all([fileListJsJob, fileListCssJob, fileListHtmlJob])
 
   const esbuild1 = esbuild.build({
     ...commonBuildParams,
-    entryPoints: ['.tmp/build/dist/js/color-wheel.element.js'],
+    entryPoints: [`${esmDistPath}/color-wheel.element.js`],
     outfile: '.tmp/build/dist/color-wheel.element.min.js',
     format: 'esm',
   })
@@ -234,7 +230,7 @@ async function buildTest () {
     outfile: '.tmp/build/docs/doc.css',
   })
 
-  await Promise.all([esbuild1, esbuild2, esbuild2Node, esbuild3])
+  await Promise.all([esbuild1, esbuild2, esbuild3])
 
   logStage('build test page html')
 
