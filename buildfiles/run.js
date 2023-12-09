@@ -6,7 +6,6 @@ import { resolve, basename, dirname } from 'node:path'
 import { existsSync, readFileSync } from 'node:fs'
 import { promisify } from 'node:util'
 import { execFile as baseExecFile, exec, spawn } from 'node:child_process'
-import { minify } from 'html-minifier'
 
 const execPromise = promisify(exec)
 const execFile = promisify(baseExecFile)
@@ -279,7 +278,7 @@ async function buildESM (outputDir) {
 
   const fileListHtml = await listNonIgnoredFiles({ patterns: ['src/**/*.element.html'] })
   const fileListHtmlJob = fileListHtml.map(async (path) => {
-    const minHtml = minifyHtml(await fs.readFile(path, 'utf8'))
+    const minHtml = await minifyHtml(await fs.readFile(path, 'utf8'))
     const minHtmlJs = await esbuild.transform(minHtml, { loader: 'text', format: 'esm' })
     const noSrcPath = path.split('/').slice(1).join('/')
     const outfile = pathFromProject(`${outputDir}/${noSrcPath}.generated.js`)
@@ -306,7 +305,7 @@ async function getESbuildPlugin () {
 
       build.onLoad({ filter: /\.element.html$/ }, async (args) => {
         return {
-          contents: minifyHtml(await fs.readFile(args.path, 'utf8')),
+          contents: await minifyHtml(await fs.readFile(args.path, 'utf8')),
           loader: 'text',
         }
       })
@@ -315,7 +314,8 @@ async function getESbuildPlugin () {
   }
 }
 
-function minifyHtml (htmlText) {
+async function minifyHtml (htmlText) {
+  const { minify } = await import('html-minifier')
   return minify(htmlText, {
     removeAttributeQuotes: true,
     useShortDoctype: true,
