@@ -1,4 +1,7 @@
-/** @type {WeakMap<HTMLElement, ObserverOption[]>} */
+/** 
+ * All observers information are saved here
+ * @type {WeakMap<HTMLElement, ObserverOption[]>} 
+ */
 const observerOptionsMap = new WeakMap()
 
 const resizeObserver = new ResizeObserver(entries => {
@@ -25,7 +28,24 @@ const resizeObserver = new ResizeObserver(entries => {
   }
 })
 
-/** @type {{[name: string]: HTMLTemplateElement}} */
+
+/**
+ * @param {string} name - css custom property name
+ * @returns {string} css class name of observer
+ */
+const observerClassName = (name) => `css-watch-observer__${name}`
+
+/**
+ * @param {string} name - css custom property name
+ * @returns {string} css class name of observer's resize target
+ */
+const observerTargetClassName = (name) => `${observerClassName(name)}--target`
+
+
+/** 
+ * {@link cssPropertyTemplate} memoization cache
+ * @type {{[name: string]: HTMLTemplateElement}} 
+ */
 const templateCache = {}
 
 /**
@@ -35,22 +55,9 @@ const templateCache = {}
 function cssPropertyTemplate (name) {
   if (!templateCache[name]) {
     const template = document.createElement('template')
-    template.innerHTML = `<style class="css-watch-observer__${name}">
-        .css-watch-observer__${name}--target {
-            font-size: 1rem;
-            display: inline-block;
-            visibility: hidden;
-            position: absolute;
-            z-index: -10000;
-            pointer-events: none
-        }
-    
-        .css-watch-observer__${name}--target::before {
-            content: var(${name})
-        }            
-        </style>
-        <span class="css-watch-observer__${name} css-watch-observer__${name}--target"></span>
-        `
+    const className = observerClassName(name)
+    const targetClassName = observerTargetClassName(name)
+    template.innerHTML = `<style class="${className}">.${targetClassName} {visibility:hidden;position:absolute;pointer-events:none}.${targetClassName}::before {content:var(${name})}</style><span class="${className} ${targetClassName}"></span>`
     templateCache[name] = template
   }
 
@@ -65,6 +72,8 @@ function cssPropertyTemplate (name) {
  */
 export function shadowDomCustomCssVariableObserver (customPropertyName, callback) {
   const template = cssPropertyTemplate(customPropertyName)
+  const className = observerClassName(customPropertyName)
+  const targetClassName = observerTargetClassName(customPropertyName)
   return {
     observe: (element) => {
       const observerOptions = observerOptionsMap.get(element) || []
@@ -72,7 +81,7 @@ export function shadowDomCustomCssVariableObserver (customPropertyName, callback
 
       if (observerOptionsWithName.length <= 0) {
         element.shadowRoot?.append(document.importNode(template.content, true))
-        const elementToObserve = element.shadowRoot?.querySelector(`.css-watch-observer__${customPropertyName}--target`)
+        const elementToObserve = element.shadowRoot?.querySelector(`.${targetClassName}`)
         elementToObserve && resizeObserver.observe(elementToObserve)
       }
 
@@ -88,9 +97,9 @@ export function shadowDomCustomCssVariableObserver (customPropertyName, callback
       const newObserverOptions = observerOptions.filter(option => option.handler !== callback || option.customPropertyName !== customPropertyName)
       const newObserverOptionsWithName = newObserverOptions.filter(option => option.customPropertyName === customPropertyName)
       if (newObserverOptionsWithName.length <= 0) {
-        const elementToObserve = element.shadowRoot?.querySelector(`.css-watch-observer__${customPropertyName}--target`)
+        const elementToObserve = element.shadowRoot?.querySelector(`.${targetClassName}`)
         elementToObserve && resizeObserver.unobserve(elementToObserve)
-        element.shadowRoot?.querySelectorAll(`.css-watch-observer__${customPropertyName}`).forEach(el => el.remove())
+        element.shadowRoot?.querySelectorAll(`.${className}`).forEach(el => el.remove())
       }
       observerOptionsMap.set(element, newObserverOptions)
     },
