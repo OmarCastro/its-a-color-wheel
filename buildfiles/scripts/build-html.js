@@ -28,7 +28,7 @@ await import('prismjs/components/prism-bash.js')
 
 const projectPath = new URL('../../', import.meta.url)
 const docsPath = new URL('docs', projectPath).pathname
-const docsOutputPath = new URL('.tmp/build/docs', projectPath).pathname
+const docsOutputPath = new URL('build/docs', projectPath).pathname
 
 const fs = await import('fs')
 
