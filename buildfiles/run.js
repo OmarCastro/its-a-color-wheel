@@ -1,26 +1,40 @@
 #!/usr/bin/env -S node --input-type=module
 /* eslint-disable camelcase, max-lines-per-function, jsdoc/require-jsdoc, jsdoc/require-param-description */
+/*
+This file is purposely large to easily move the code to multiple projects, its build code, not production.
+To help navigate this file is divided by sections
+@section 1 init
+@section 2 tasks
+@section 3 jobs
+@section 4 utils
+@section 5 Dev Server
+@section 6 linters
+@section 7 minifiers
+@section 8 exec utilities
+@section 9 filesystem utilities
+@section 10 build tools plugins
+*/
 import process from 'node:process'
 import fs from 'node:fs/promises'
 import { resolve, basename, dirname } from 'node:path'
 import { existsSync, readFileSync } from 'node:fs'
 import { promisify } from 'node:util'
-import { execFile as baseExecFile, exec, spawn } from 'node:child_process'
-
-const execPromise = promisify(exec)
+import { execFile as baseExecFile, exec as baseExec, spawn } from 'node:child_process'
+const exec = promisify(baseExec)
 const execFile = promisify(baseExecFile)
+
+// @section 1 init
 
 const projectPathURL = new URL('../', import.meta.url)
 const pathFromProject = (path) => new URL(path, projectPathURL).pathname
 process.chdir(pathFromProject('.'))
 let updateDevServer = () => {}
 
-const args = process.argv.slice(2)
+// @section 2 tasks
 
 const helpTask = {
   description: 'show this help',
   cb: async () => { console.log(helpText()); process.exit(0) },
-
 }
 
 const tasks = {
@@ -60,12 +74,17 @@ const tasks = {
     description: 'launch test server, used when running tests',
     cb: async () => { await openTestServer(); await wait(2 ** 30) },
   },
+  'prepare-release': {
+    description: 'builds the project and prepares it for release',
+    cb: async () => { await prepareRelease(); process.exit(0) },
+  },
   help: helpTask,
   '--help': helpTask,
   '-h': helpTask,
 }
 
 async function main () {
+  const args = process.argv.slice(2)
   if (args.length <= 0) {
     console.log(helpText())
     return process.exit(0)
@@ -84,6 +103,8 @@ async function main () {
 }
 
 await main()
+
+// @section 3 jobs
 
 async function execDevEnvironment ({ openBrowser = false } = {}) {
   await openDevServer({ openBrowser })
@@ -222,7 +243,7 @@ async function buildTest () {
 
   logStage('build test page html')
 
-  await execPromise(`${process.argv[0]} buildfiles/scripts/build-html.js test-page.html`)
+  await exec(`${process.argv[0]} buildfiles/scripts/build-html.js test-page.html`)
 
   logStage('move to final dir')
   logEndStage()
@@ -235,7 +256,7 @@ async function buildDocs () {
 
   logStage('build docs html')
 
-  await execPromise(`${process.argv[0]} buildfiles/scripts/build-html.js index.html`)
+  await exec(`${process.argv[0]} buildfiles/scripts/build-html.js index.html`)
 
   logStage('move to final dir')
 
@@ -289,45 +310,6 @@ async function buildESM (outputDir) {
 
   await Promise.all([...fileListJsJob, ...fileListCssJob, ...fileListHtmlJob])
 }
-/**
- * @returns {Promise<import('esbuild').Plugin>} - esbuild plugin
- */
-async function getESbuildPlugin () {
-  return {
-    name: 'assetsBuid',
-    async setup (build) {
-      build.onLoad({ filter: /\.element.css$/ }, async (args) => {
-        return {
-          contents: await minifyCss(await fs.readFile(args.path, 'utf8')),
-          loader: 'text',
-        }
-      })
-
-      build.onLoad({ filter: /\.element.html$/ }, async (args) => {
-        return {
-          contents: await minifyHtml(await fs.readFile(args.path, 'utf8')),
-          loader: 'text',
-        }
-      })
-    },
-
-  }
-}
-
-async function minifyHtml (htmlText) {
-  const { minify } = await import('html-minifier')
-  return minify(htmlText, {
-    removeAttributeQuotes: true,
-    useShortDoctype: true,
-    collapseWhitespace: true,
-  })
-}
-
-async function minifyCss (cssText) {
-  const esbuild = await import('esbuild')
-  const result = await esbuild.transform(cssText, { loader: 'css', minify: true })
-  return result.code
-}
 
 async function execBuild () {
   await buildTest()
@@ -376,6 +358,24 @@ async function execGithubBuildWorkflow () {
   await execTests()
   await buildDocs()
 }
+
+async function prepareRelease () {
+  await cleanRelease()
+  await buildTest()
+  await execTests()
+  await buildDocs()
+  logStartStage('release:prepare', 'create dist')
+  await cp_R('build/dist', 'dist')
+  logEndStage()
+}
+
+async function cleanRelease () {
+  logStartStage('release:clean', 'remove dist')
+  await rm_rf('dist')
+  logEndStage()
+}
+
+// @section 4 utils
 
 function helpText () {
   const fromNPM = isRunningFromNPMScript()
@@ -431,10 +431,7 @@ async function checkNodeModulesFolder () {
   await cmdSpawn('npm ci')
 }
 
-function cmdSpawn (command, options = {}) {
-  const p = spawn('/bin/sh', ['-c', command], { stdio: 'inherit', ...options })
-  return new Promise((resolve) => { p.on('exit', resolve) })
-}
+// @section 5 Dev server
 
 async function openDevServer ({ openBrowser = false } = {}) {
   const { default: serve } = await import('wonton')
@@ -507,7 +504,7 @@ function wait (ms) {
   })
 }
 
-// Linters
+// @section 6 linters
 
 async function lintCode ({ onlyChanged }, options) {
   const esLintFilePatterns = ['**/*.js']
@@ -607,7 +604,45 @@ async function validateFiles ({ patterns, onlyChanged, validation }) {
   return errorCount ? 1 : 0
 }
 
-// File Utils
+// @section 7 minifiers
+
+async function minifyHtml (htmlText) {
+  const { minify } = await import('html-minifier')
+  return minify(htmlText, {
+    removeAttributeQuotes: true,
+    useShortDoctype: true,
+    collapseWhitespace: true,
+  })
+}
+
+async function minifyCss (cssText) {
+  const esbuild = await import('esbuild')
+  const result = await esbuild.transform(cssText, { loader: 'css', minify: true })
+  return result.code
+}
+
+// @section 8 exec utilities
+
+function cmdSpawn (command, options = {}) {
+  const p = spawn('/bin/sh', ['-c', command], { stdio: 'inherit', ...options })
+  return new Promise((resolve) => { p.on('exit', resolve) })
+}
+
+async function execCmd (command, args) {
+  const options = {
+    cwd: process.cwd(),
+    env: process.env,
+    stdio: 'pipe',
+    encoding: 'utf-8',
+  }
+  return await execFile(command, args, options)
+}
+
+async function execGitCmd (args) {
+  return (await execCmd('git', args)).stdout.trim().toString().split('\n')
+}
+
+// @section 9 filesystem utilities
 
 async function * getFiles (dir) {
   const dirents = await fs.readdir(dir, { withFileTypes: true })
@@ -629,20 +664,6 @@ async function * watchDirs (...dirs) {
   while (true) {
     yield new Promise(resolve => { currentResolver = resolve })
   }
-}
-
-async function execCmd (command, args) {
-  const options = {
-    cwd: process.cwd(),
-    env: process.env,
-    stdio: 'pipe',
-    encoding: 'utf-8',
-  }
-  return await execFile(command, args, options)
-}
-
-async function execGitCmd (args) {
-  return (await execCmd('git', args)).stdout.trim().toString().split('\n')
 }
 
 async function listNonIgnoredFiles ({ ignorePath = '.gitignore', patterns } = {}) {
@@ -687,4 +708,31 @@ async function listChangedFiles () {
 
 function isRunningFromNPMScript () {
   return JSON.parse(readFileSync(pathFromProject('./package.json'))).name === process.env.npm_package_name
+}
+
+// @section 10 build tools plugins
+
+/**
+ * @returns {Promise<import('esbuild').Plugin>} - esbuild plugin
+ */
+async function getESbuildPlugin () {
+  return {
+    name: 'assetsBuid',
+    async setup (build) {
+      build.onLoad({ filter: /\.element.css$/ }, async (args) => {
+        return {
+          contents: await minifyCss(await fs.readFile(args.path, 'utf8')),
+          loader: 'text',
+        }
+      })
+
+      build.onLoad({ filter: /\.element.html$/ }, async (args) => {
+        return {
+          contents: await minifyHtml(await fs.readFile(args.path, 'utf8')),
+          loader: 'text',
+        }
+      })
+    },
+
+  }
 }
