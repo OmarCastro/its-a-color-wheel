@@ -2,11 +2,17 @@
   "name": "its-a-color-wheel",
   "version": "0.4.0",
   "description": "It's a color wheel",
-  "main": "dist/index.js",
+  "main": "dist/esm/color-wheel.element.js",
   "directories": {
     "doc": "docs",
     "test": "test"
   },
+  "files": [
+    "README.md",
+    "CHANGELOG.md",
+    "src",
+    "dist"
+  ],
   "scripts": {
     "build": "node ./buildfiles/run.js build",
     "build:github-action": "node ./buildfiles/run.js build:github-action",
