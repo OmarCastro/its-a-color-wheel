@@ -1,6 +1,6 @@
-/** 
+/**
  * All observers information are saved here
- * @type {WeakMap<HTMLElement, ObserverOption[]>} 
+ * @type {WeakMap<HTMLElement, ObserverOption[]>}
  */
 const observerOptionsMap = new WeakMap()
 
@@ -28,7 +28,6 @@ const resizeObserver = new ResizeObserver(entries => {
   }
 })
 
-
 /**
  * @param {string} name - css custom property name
  * @returns {string} css class name of observer
@@ -41,10 +40,9 @@ const observerClassName = (name) => `css-watch-observer__${name}`
  */
 const observerTargetClassName = (name) => `${observerClassName(name)}--target`
 
-
-/** 
+/**
  * {@link cssPropertyTemplate} memoization cache
- * @type {{[name: string]: HTMLTemplateElement}} 
+ * @type {{[name: string]: HTMLTemplateElement}}
  */
 const templateCache = {}
 
