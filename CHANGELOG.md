@@ -7,13 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] - 2023-12-11
+
 ### Added
 
 - npm package support
 - ESM dist, no need to configure bundler to use an asset as it is converted to JS
 - Breaking change: Change "--color-wheel--inner-radius" to "--color-wheel-inner-radius"
 
-## [0.3.0] - 2023-10-10
+## [0.3.0] - 2023-1-31
 
 ### Added
 
