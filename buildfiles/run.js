@@ -74,9 +74,13 @@ const tasks = {
     description: 'launch test server, used when running tests',
     cb: async () => { await openTestServer(); await wait(2 ** 30) },
   },
-  'prepare-release': {
+  'release:prepare': {
     description: 'builds the project and prepares it for release',
     cb: async () => { await prepareRelease(); process.exit(0) },
+  },
+  'release:clean': {
+    description: 'clean release preparation',
+    cb: async () => { await cleanRelease(); process.exit(0) },
   },
   help: helpTask,
   '--help': helpTask,
