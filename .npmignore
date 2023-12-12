@@ -1,0 +1,47 @@
+### FROM .gitignore
+
+# Build target
+build
+
+# node_modules
+node_modules
+
+# test results
+reports
+/test-results/
+/playwright-report/
+/playwright/.cache/
+
+# code coverage
+.nyc_output
+coverage
+
+### VisualStudioCode ###
+# VisualStudioCode settings
+.vscode
+
+# Local History for Visual Studio Code
+.history/
+
+# Built Visual Studio Code Extensions
+*.vsix
+
+# Ignore all local history of files
+.history
+.ionide
+
+# Ignore temporary files
+.tmp
+
+### NPM specific ignores
+
+*.spec.js
+src/color-wheel.element.ui.spec.js-snapshots
+docs
+jsconfig.json
+test-utils
+.*
+buildfiles
+*.tgz
+custom.d.ts
+CODE_OF_CONDUCT.md
