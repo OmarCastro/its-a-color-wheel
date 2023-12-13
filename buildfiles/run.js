@@ -12,16 +12,18 @@ To help navigate this file is divided by sections
 @section 7 minifiers
 @section 8 exec utilities
 @section 9 filesystem utilities
-@section 10 build tools plugins
+@section 10 npm utilities
+@section 11 build tools plugins
 */
 import process from 'node:process'
-import fs from 'node:fs/promises'
+import fs, { readFile as fsReadFile } from 'node:fs/promises'
 import { resolve, basename, dirname } from 'node:path'
 import { existsSync, readFileSync } from 'node:fs'
 import { promisify } from 'node:util'
 import { execFile as baseExecFile, exec as baseExec, spawn } from 'node:child_process'
 const exec = promisify(baseExec)
 const execFile = promisify(baseExecFile)
+const readFile = (path) => fsReadFile(path, { encoding: 'utf8' })
 
 // @section 1 init
 
@@ -365,6 +367,14 @@ async function execGithubBuildWorkflow () {
 
 async function prepareRelease () {
   await cleanRelease()
+  logStartStage('release:prepare', 'check version')
+  const publishedVersion = await getLatestPublishedVersion()
+  const currentVersion = (await readPackageJson()).version
+  const { gt } = await import('semver')
+  if (!gt(currentVersion, publishedVersion)) {
+    throw Error(`current version (${currentVersion}) must be higher than latest published version (${publishedVersion})`)
+  }
+  logEndStage()
   await buildTest()
   await execTests()
   await buildDocs()
@@ -427,12 +437,6 @@ function logEndStage () {
 function logStartStage (jobname, stage) {
   logStage.currentJobName = jobname
   stage && process.stdout.write(`[${jobname}] ${stage}...`)
-}
-
-async function checkNodeModulesFolder () {
-  if (existsSync(pathFromProject('node_modules'))) { return }
-  console.log('node_modules absent running "npm ci"...')
-  await cmdSpawn('npm ci')
 }
 
 // @section 5 Dev server
@@ -714,7 +718,26 @@ function isRunningFromNPMScript () {
   return JSON.parse(readFileSync(pathFromProject('./package.json'))).name === process.env.npm_package_name
 }
 
-// @section 10 build tools plugins
+// @section 10 npm utilities
+
+async function checkNodeModulesFolder () {
+  if (existsSync(pathFromProject('node_modules'))) { return }
+  console.log('node_modules absent running "npm ci"...')
+  await cmdSpawn('npm ci')
+}
+
+async function getLatestPublishedVersion () {
+  const pkg = await readPackageJson()
+
+  const version = await exec(`npm view ${pkg.name} version`)
+  return version.stdout.trim()
+}
+
+async function readPackageJson () {
+  return await readFile(pathFromProject('package.json')).then(str => JSON.parse(str))
+}
+
+// @section 11 build tools plugins
 
 /**
  * @returns {Promise<import('esbuild').Plugin>} - esbuild plugin
