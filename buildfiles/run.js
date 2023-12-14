@@ -2,7 +2,7 @@
 /* eslint-disable camelcase, max-lines-per-function, jsdoc/require-jsdoc, jsdoc/require-param-description */
 /*
 This file is purposely large to easily move the code to multiple projects, its build code, not production.
-To help navigate this file is divided by sections
+To help navigate this file is divided by sections:
 @section 1 init
 @section 2 tasks
 @section 3 jobs
@@ -13,10 +13,11 @@ To help navigate this file is divided by sections
 @section 8 exec utilities
 @section 9 filesystem utilities
 @section 10 npm utilities
-@section 11 build tools plugins
+@section 11 badge utilities
+@section 12 build tools plugins
 */
 import process from 'node:process'
-import fs, { readFile as fsReadFile } from 'node:fs/promises'
+import fs, { readFile as fsReadFile, writeFile } from 'node:fs/promises'
 import { resolve, basename, dirname } from 'node:path'
 import { existsSync, readFileSync } from 'node:fs'
 import { promisify } from 'node:util'
@@ -149,18 +150,26 @@ async function execTests () {
   await cmdSpawn("TZ=UTC npx c8 --report-dir reports/.tmp/coverage/final report -r lcov -r json-summary --include 'src/*.ts' --include 'src/*.js' --include 'build/docs/dist/color-wheel.element.min.js'")
 
   if (existsSync(COVERAGE_DIR)) {
+    await rm_rf(COVERAGE_BACKUP_DIR)
     await mv(COVERAGE_DIR, COVERAGE_BACKUP_DIR)
   }
   await mv(COVERAGE_TMP_DIR, COVERAGE_DIR)
   const rmTmp = rm_rf(REPORTS_TMP_DIR)
   const rmBak = rm_rf(COVERAGE_BACKUP_DIR)
 
-  const badges = cmdSpawn('node buildfiles/scripts/build-badges.js')
+  const badges = [
+    makeBadgeForCoverages(pathFromProject('reports/coverage/unit')),
+    makeBadgeForCoverages(pathFromProject('reports/coverage/ui')),
+    makeBadgeForCoverages(pathFromProject('reports/coverage/final')),
+    makeBadgeForTestResult(pathFromProject('reports/test-results')),
+    makeBadgeForLicense(pathFromProject('reports')),
+    makeBadgeForNPMVersion(pathFromProject('reports')),
+  ]
 
   const files = Array.from(await getFiles('reports/coverage/unit'))
   const cpBase = files.filter(path => basename(path) === 'base.css').map(path => fs.cp('buildfiles/assets/coverage-report-base.css', path))
   const cpPrettify = files.filter(path => basename(path) === 'prettify.css').map(path => fs.cp('buildfiles/assets/coverage-report-prettify.css', path))
-  await Promise.all([rmTmp, rmBak, badges, ...cpBase, ...cpPrettify])
+  await Promise.all([rmTmp, rmBak, ...badges, ...cpBase, ...cpPrettify])
 
   await rm_rf('build/docs/reports')
   await mkdir_p('build/docs')
@@ -737,7 +746,160 @@ async function readPackageJson () {
   return await readFile(pathFromProject('package.json')).then(str => JSON.parse(str))
 }
 
-// @section 11 build tools plugins
+// @section 11 badge utilities
+
+function getBadgeColors () {
+  getBadgeColors.cache ??= {
+    green: '#007700',
+    yellow: '#777700',
+    orange: '#aa0000',
+    red: '#aa0000',
+    blue: '#007ec6',
+  }
+  return getBadgeColors.cache
+}
+
+async function makeBadge (params) {
+  const { makeBadge: libMakeBadge } = await import('badge-maker')
+  return libMakeBadge({
+    style: 'for-the-badge',
+    ...params,
+  })
+}
+
+function getLightVersionOfBadgeColor (color) {
+  const colors = getBadgeColors()
+  getLightVersionOfBadgeColor.cache ??= {
+    [colors.green]: '#90e59a',
+    [colors.yellow]: '#dd4',
+    [colors.orange]: '#fa7',
+    [colors.red]: '#f77',
+    [colors.blue]: '#acf',
+  }
+  return getLightVersionOfBadgeColor.cache[color]
+}
+
+function badgeColor (pct) {
+  const colors = getBadgeColors()
+  if (pct > 80) { return colors.green }
+  if (pct > 60) { return colors.yellow }
+  if (pct > 40) { return colors.orange }
+  if (pct > 20) { return colors.red }
+  return 'red'
+}
+
+async function svgStyle (color) {
+  const { document } = await loadDom()
+  const style = document.createElement('style')
+  style.innerHTML = `
+  text { fill: #333; }
+  rect.label { fill: #ccc; }
+  rect { fill: ${getLightVersionOfBadgeColor(color) || color} }
+  @media (prefers-color-scheme: dark) {
+    text { fill: #fff; }
+    rect.label { fill: #555; stroke: none; }
+    rect { fill: ${color} }
+  }
+  `.replaceAll(/\n+\s*/g, '')
+  return style
+}
+
+async function applyA11yTheme (svgContent) {
+  const { document } = await loadDom()
+  const { body } = document
+  body.innerHTML = svgContent
+  const svg = body.querySelector('svg')
+  if (!svg) { return svgContent }
+  svg.querySelectorAll('text').forEach(el => el.removeAttribute('fill'))
+  const rects = Array.from(svg.querySelectorAll('rect'))
+  rects.slice(0, 1).forEach(el => {
+    el.classList.add('label')
+    el.removeAttribute('fill')
+  })
+  const colors = getBadgeColors()
+  let color = colors.red
+  rects.slice(1).forEach(el => {
+    color = el.getAttribute('fill') || colors.red
+    el.removeAttribute('fill')
+  })
+  svg.prepend(svgStyle(color))
+
+  return svg.outerHTML
+}
+
+async function makeBadgeForCoverages (path) {
+  const json = await readFile(`${path}/coverage-summary.json`).then(str => JSON.parse(str))
+  const svg = await makeBadge({
+    label: 'coverage',
+    message: `${json.total.lines.pct}%`,
+    color: badgeColor(json.total.lines.pct),
+  })
+
+  const badgeWrite = writeFile(`${path}/coverage-badge.svg`, svg)
+  const a11yBadgeWrite = writeFile(`${path}/coverage-badge-a11y.svg`, await applyA11yTheme(svg))
+  await Promise.all([badgeWrite, a11yBadgeWrite])
+}
+
+async function makeBadgeForTestResult (path) {
+  const json = await readFile(`${path}/test-results.json`).then(str => JSON.parse(str))
+  const tests = (json?.suites ?? []).flatMap(suite => suite.specs)
+  const passedTests = tests.filter(test => test.ok)
+  const testAmount = tests.length
+  const passedAmount = passedTests.length
+  const passed = passedAmount === testAmount
+  const svg = await makeBadge({
+    label: 'tests',
+    message: `${passedAmount} / ${testAmount}`,
+    color: passed ? '#007700' : '#aa0000',
+  })
+  const badgeWrite = writeFile(`${path}/test-results-badge.svg`, svg)
+  const a11yBadgeWrite = writeFile(`${path}/test-results-badge-a11y.svg`, await applyA11yTheme(svg))
+  await Promise.all([badgeWrite, a11yBadgeWrite])
+}
+
+async function makeBadgeForLicense (path) {
+  const pkg = await readPackageJson()
+
+  const svg = await makeBadge({
+    label: 'license',
+    message: pkg.license,
+    color: '#007700',
+  })
+
+  const badgeWrite = writeFile(`${path}/license-badge.svg`, svg)
+  const a11yBadgeWrite = writeFile(`${path}/license-badge-a11y.svg`, await applyA11yTheme(svg))
+  await Promise.all([badgeWrite, a11yBadgeWrite])
+}
+
+async function makeBadgeForNPMVersion (path) {
+  const version = await getLatestPublishedVersion()
+
+  const svg = await makeBadge({
+    label: 'npm',
+    message: version,
+    color: '#007ec6',
+  })
+
+  const badgeWrite = writeFile(`${path}/npm-version-badge.svg`, svg)
+  const a11yBadgeWrite = writeFile(`${path}/npm-version-badge-a11y.svg`, await applyA11yTheme(svg))
+  await Promise.all([badgeWrite, a11yBadgeWrite])
+}
+
+async function loadDom () {
+  if (!loadDom.cache) {
+    loadDom.cache = import('jsdom').then(({ JSDOM }) => {
+      const jsdom = new JSDOM('<body></body>', { url: import.meta.url })
+      const window = jsdom.window
+      const DOMParser = window.DOMParser
+      /** @type {Document} */
+      const document = window.document
+      return { window, DOMParser, document }
+    })
+  }
+  return loadDom.cache
+}
+
+// @section 12 build tools plugins
 
 /**
  * @returns {Promise<import('esbuild').Plugin>} - esbuild plugin
