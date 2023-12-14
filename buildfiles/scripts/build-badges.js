@@ -1,21 +1,31 @@
 /* eslint-disable camelcase, max-lines-per-function, jsdoc/require-jsdoc, jsdoc/require-param-description */
-import { makeBadge } from 'badge-maker'
 import { readFile as fsReadFile, writeFile } from 'node:fs/promises'
-import { JSDOM } from 'jsdom'
 import { promisify } from 'util'
 import { exec as pexec } from 'child_process'
 const exec = promisify(pexec)
-
-const jsdom = new JSDOM('<body></body>', { url: import.meta.url })
-/** @type {Document} */
-const document = jsdom.window.document
-const body = document.body
 
 const projectPath = new URL('../../', import.meta.url).pathname
 
 const readFile = (path) => fsReadFile(path, { encoding: 'utf8' })
 
 const BADGE_STYLE = 'for-the-badge'
+
+const loadDom = (() => {
+  let domResult = async () => {
+    const { JSDOM } = await import('jsdom')
+
+    const jsdom = new JSDOM('<body></body>', { url: import.meta.url })
+    const window = jsdom.window
+    const DOMParser = window.DOMParser
+
+    /** @type {Document} */
+    const document = window.document
+    const result = { window, DOMParser, document }
+    domResult = async () => result
+    return result
+  }
+  return async () => await domResult()
+})()
 
 const colors = {
   green: '#007700',
@@ -56,7 +66,9 @@ const svgStyle = (color) => {
   return style
 }
 
-const applyA11yTheme = (svgContent) => {
+const applyA11yTheme = async (svgContent) => {
+  const { document } = await loadDom()
+  const { body } = document
   body.innerHTML = svgContent
   const svg = body.querySelector('svg')
   if (!svg) { return svgContent }
@@ -77,6 +89,7 @@ const applyA11yTheme = (svgContent) => {
 }
 
 async function makeBadgeForCoverages (path) {
+  const { makeBadge } = await import('badge-maker')
   const json = await readFile(`${path}/coverage-summary.json`).then(str => JSON.parse(str))
   const svg = makeBadge({
     label: 'coverage',
@@ -90,6 +103,7 @@ async function makeBadgeForCoverages (path) {
 }
 
 async function makeBadgeForTestResult (path) {
+  const { makeBadge } = await import('badge-maker')
   const json = await readFile(`${path}/test-results.json`).then(str => JSON.parse(str))
   const tests = (json?.suites ?? []).flatMap(suite => suite.specs)
   const passedTests = tests.filter(test => test.ok)
@@ -108,6 +122,7 @@ async function makeBadgeForTestResult (path) {
 }
 
 async function makeBadgeForLicense () {
+  const { makeBadge } = await import('badge-maker')
   const pkg = await readFile(`${projectPath}/package.json`).then(str => JSON.parse(str))
 
   const svg = makeBadge({
@@ -122,8 +137,8 @@ async function makeBadgeForLicense () {
 }
 
 async function makeBadgeForNPMVersion () {
+  const { makeBadge } = await import('badge-maker')
   const pkg = await readFile(`${projectPath}/package.json`).then(str => JSON.parse(str))
-
   const version = await exec(`npm view ${pkg.name} version`)
 
   const svg = makeBadge({
