@@ -147,6 +147,7 @@ async function execTests () {
   await cp_R('reports/.tmp/coverage/ui/tmp', 'reports/.tmp/coverage/final/tmp')
 
   await cmdSpawn('TZ=UTC npx c8 --report-dir reports/.tmp/coverage/ui report -r lcov -r json-summary --include build/docs/dist/color-wheel.element.min.js')
+  logStage('merge coverage reports')
   await cmdSpawn("TZ=UTC npx c8 --report-dir reports/.tmp/coverage/final report -r lcov -r json-summary --include 'src/*.ts' --include 'src/*.js' --include 'build/docs/dist/color-wheel.element.min.js'")
 
   if (existsSync(COVERAGE_DIR)) {
@@ -157,6 +158,8 @@ async function execTests () {
   const rmTmp = rm_rf(REPORTS_TMP_DIR)
   const rmBak = rm_rf(COVERAGE_BACKUP_DIR)
 
+  logStage('build badges')
+
   const badges = [
     makeBadgeForCoverages(pathFromProject('reports/coverage/unit')),
     makeBadgeForCoverages(pathFromProject('reports/coverage/ui')),
@@ -166,7 +169,8 @@ async function execTests () {
     makeBadgeForNPMVersion(pathFromProject('reports')),
   ]
 
-  const files = Array.from(await getFiles('reports/coverage/unit'))
+  logStage('fix report styles')
+  const files = Array.from(await getFiles('reports/coverage/final'))
   const cpBase = files.filter(path => basename(path) === 'base.css').map(path => fs.cp('buildfiles/assets/coverage-report-base.css', path))
   const cpPrettify = files.filter(path => basename(path) === 'prettify.css').map(path => fs.cp('buildfiles/assets/coverage-report-prettify.css', path))
   await Promise.all([rmTmp, rmBak, ...badges, ...cpBase, ...cpPrettify])
@@ -822,7 +826,7 @@ async function applyA11yTheme (svgContent) {
     color = el.getAttribute('fill') || colors.red
     el.removeAttribute('fill')
   })
-  svg.prepend(svgStyle(color))
+  svg.prepend(await svgStyle(color))
 
   return svg.outerHTML
 }
