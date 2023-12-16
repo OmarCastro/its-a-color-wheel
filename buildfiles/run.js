@@ -229,6 +229,7 @@ async function buildTest () {
     outfile: `${docsDistPath}/color-wheel.element.min.js`,
     format: 'esm',
     sourcemap: true,
+    metafile: true,
     minify: true,
     plugins: [await getESbuildPlugin()],
   })
@@ -259,6 +260,9 @@ async function buildTest () {
   })
 
   await Promise.all([buildDistFromEsm, buildDocsDist, buildDocsJS, buildDocsStyles])
+
+  const metafile = (await buildDocsDist).metafile
+  writeFile('reports/module-graph.json', JSON.stringify(metafile, null, 2))
 
   logStage('build test page html')
 
