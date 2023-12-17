@@ -14,7 +14,8 @@ To help navigate this file is divided by sections:
 @section 9 filesystem utilities
 @section 10 npm utilities
 @section 11 badge utilities
-@section 12 build tools plugins
+@section 12 module graph utilities
+@section 13 build tools plugins
 */
 import process from 'node:process'
 import fs, { readFile as fsReadFile, writeFile } from 'node:fs/promises'
@@ -262,8 +263,9 @@ async function buildTest () {
   await Promise.all([buildDistFromEsm, buildDocsDist, buildDocsJS, buildDocsStyles])
 
   const metafile = (await buildDocsDist).metafile
-  writeFile('reports/module-graph.json', JSON.stringify(metafile, null, 2))
-
+  await writeFile('reports/module-graph.json', JSON.stringify(metafile, null, 2))
+  const svg = await createModuleGraphSvg(metafile)
+  await writeFile('reports/module-graph.svg', svg)
   logStage('build test page html')
 
   await exec(`${process.argv[0]} buildfiles/scripts/build-html.js test-page.html`)
@@ -907,7 +909,33 @@ async function loadDom () {
   return loadDom.cache
 }
 
-// @section 12 build tools plugins
+// @section 12 module graph utilities
+
+async function createModuleGraphSvg (moduleGrapnJson) {
+  const { default: anafanafo } = await import('anafanafo')
+  const inputs = moduleGrapnJson.inputs
+  const inputsSvg = Object.entries(inputs).map(([file, info], index) => {
+    const textWidthPx = anafanafo(file, { font: 'bold 10px Verdana' })
+    const textHeighthPx = 10
+    const padding = 5
+    const height = textHeighthPx + padding * 2
+    const width = textWidthPx + padding * 2
+    const margin = 2
+    return {
+      text: `<text x="${textWidthPx / 2 + padding}" y="${(index + 1) * (height + margin)}" textLength="${textWidthPx}">${file}</text>`,
+      rect: `<rect width="${width}"  y="${(index) * (height + margin) + height / 2}" height="${height}" fill="#555"/>`,
+    }
+  })
+  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" aria-label="NPM: 0.4.0">
+  <title>NPM: 0.4.0</title>
+  <g shape-rendering="crispEdges">${inputsSvg.map(({ rect: _ }) => _).join('')}</g>
+  <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="10">
+  ${inputsSvg.map(({ text: _ }) => _).join('')}
+  </g>
+  </svg>`
+}
+
+// @section 13 build tools plugins
 
 /**
  * @returns {Promise<import('esbuild').Plugin>} - esbuild plugin
