@@ -955,7 +955,7 @@ async function createModuleGraphSvg (moduleGrapnJson) {
     maxHeight = Math.max(maxHeight, y + height)
     return {
       text: `<text x="${x + padding + textWidthPx / 2}" y="${y + padding + textHeighthPx / 2}" textLength="${textWidthPx}">${file}</text>`,
-      rect: `<rect width="${width}" x="${x}" y="${y}" height="${height}" fill="#555"/>`,
+      rect: `<rect rx=4 ry=4 width="${width}" x="${x}" y="${y}" height="${height}" fill="#555"/>`,
     }
   })
 
