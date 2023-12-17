@@ -971,6 +971,19 @@ async function createModuleGraphSvg (moduleGrapnJson) {
   })
 
   return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" aria-label="NPM: 0.4.0" viewBox="0 0 ${maxWidth} ${maxHeight}">
+  <style>
+    text { fill: #333; }
+    rect { fill: #ddd; stroke: #333 }
+    polyline {stroke: #333;} 
+    polyline.outer {stroke: #ddd;} 
+    #arrowhead path {stroke: #ddd; fill: #333; stroke-width:0.5} 
+    @media (prefers-color-scheme: dark) {
+      text { fill: #eee; }
+      rect { fill: #555; stroke:#eee }
+      polyline {stroke: #ddd;} 
+      polyline.outer {stroke: #333;}   
+      #arrowhead path {stroke: #333; fill: #ddd; } 
+    }</style>
   <title>Module graph</title>${defs}
   <g shape-rendering="geometricPrecision" fill="none" >${inputsLinesSvg}</g>
   <g fill="#555" stroke="#fff" shape-rendering="geometricPrecision">${inputsSvg.map(({ rect: _ }) => _).join('')}</g>
