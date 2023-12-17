@@ -912,21 +912,54 @@ async function loadDom () {
 // @section 12 module graph utilities
 
 async function createModuleGraphSvg (moduleGrapnJson) {
+  const { default: { graphlib, layout } } = await import('@dagrejs/dagre')
   const { default: anafanafo } = await import('anafanafo')
+  const padding = 5
   const inputs = moduleGrapnJson.inputs
+
+  const graph = new graphlib.Graph()
+
+  // Set an object for the graph label
+  graph.setGraph({})
+
+  // Default to assigning a new object as a label for each new edge.
+  graph.setDefaultEdgeLabel(function () { return {} })
+
+  const inputsNodeMetrics = Object.fromEntries(
+    Object.entries(inputs).map(([file]) => {
+      const textWidthPx = anafanafo(file, { font: 'bold 10px Verdana' })
+      const textHeighthPx = 10
+      const height = textHeighthPx + padding * 2
+      const width = textWidthPx + padding * 2
+      graph.setNode(file, { label: file,  width, height })
+      return [file, {
+        textWidthPx, textHeighthPx, height, width,
+      }]
+    }),
+  )
+
+  Object.entries(inputs).forEach(([file, info]) => {
+    const { imports } = info
+    imports.forEach(({ path }) => graph.setEdge(file, path))
+  })
+
+  layout(graph, { rankdir: 'TB' })
+
+  let maxWidth = 0
+  let maxHeight = 0
+
   const inputsSvg = Object.entries(inputs).map(([file, info], index) => {
-    const textWidthPx = anafanafo(file, { font: 'bold 10px Verdana' })
-    const textHeighthPx = 10
-    const padding = 5
-    const height = textHeighthPx + padding * 2
-    const width = textWidthPx + padding * 2
-    const margin = 2
+    const { textWidthPx, textHeighthPx, height, width } = inputsNodeMetrics[file]
+    const { x, y } = graph.node(file)
+    maxWidth = Math.max(maxWidth, x + width)
+    maxHeight = Math.max(maxHeight, y + height)
     return {
-      text: `<text x="${textWidthPx / 2 + padding}" y="${(index + 1) * (height + margin)}" textLength="${textWidthPx}">${file}</text>`,
-      rect: `<rect width="${width}"  y="${(index) * (height + margin) + height / 2}" height="${height}" fill="#555"/>`,
+      text: `<text x="${x + padding + textWidthPx / 2}" y="${y + padding + textHeighthPx / 2}" textLength="${textWidthPx}">${file}</text>`,
+      rect: `<rect width="${width}" x="${x}" y="${y}" height="${height}" fill="#555"/>`,
     }
   })
-  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" aria-label="NPM: 0.4.0">
+
+  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" aria-label="NPM: 0.4.0" viewBox="0 0 ${maxWidth} ${maxHeight}">
   <title>NPM: 0.4.0</title>
   <g shape-rendering="crispEdges">${inputsSvg.map(({ rect: _ }) => _).join('')}</g>
   <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="10">
