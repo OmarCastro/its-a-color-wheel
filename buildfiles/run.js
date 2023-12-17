@@ -927,8 +927,8 @@ async function createModuleGraphSvg (moduleGrapnJson) {
 
   const inputsNodeMetrics = Object.fromEntries(
     Object.entries(inputs).map(([file]) => {
-      const textWidthPx = anafanafo(file, { font: 'bold 10px Verdana' })
-      const textHeighthPx = 10
+      const textWidthPx = anafanafo(file, { font: 'bold 11px Helvetica' })
+      const textHeighthPx = 11
       const height = textHeighthPx + padding * 2
       const width = textWidthPx + padding * 2
       graph.setNode(file, { label: file,  width, height })
@@ -949,20 +949,32 @@ async function createModuleGraphSvg (moduleGrapnJson) {
   let maxHeight = 0
 
   const inputsSvg = Object.entries(inputs).map(([file, info], index) => {
-    const { textWidthPx, textHeighthPx, height, width } = inputsNodeMetrics[file]
+    const { height, width } = inputsNodeMetrics[file]
     const { x, y } = graph.node(file)
     maxWidth = Math.max(maxWidth, x + width)
     maxHeight = Math.max(maxHeight, y + height)
     return {
-      text: `<text x="${x + padding + textWidthPx / 2}" y="${y + padding + textHeighthPx / 2}" textLength="${textWidthPx}">${file}</text>`,
-      rect: `<rect rx=4 ry=4 width="${width}" x="${x}" y="${y}" height="${height}" fill="#555"/>`,
+      text: `<text x="${x}" y="${y}">${file}</text>`,
+      rect: `<rect rx="4" ry="4" width="${width}" x="${x - width / 2}" y="${y - height / 2}" height="${height}"/>`,
     }
   })
 
+  const lineArrowMarker = '<marker id="arrowhead" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="10" markerHeight="10" orient="auto">' +
+  '<path d="M 0 0 L 10 5 L 0 10 L 2 5 z" /></marker>'
+  const marker = graph.edgeCount() > 0 ? lineArrowMarker : ''
+  const defs = marker ? `<defs>${marker}</defs>` : ''
+
+  const inputsLinesSvg = graph.edges().map(e => {
+    const allPoints = [graph.node(e.v), ...graph.edge(e).points]
+    const points = allPoints.map(({ x, y }) => `${x},${y}`).join(' ')
+    return `<polyline class="outer" stroke-width="2" points="${points}"/><polyline points="${points}" marker-end="url(#arrowhead)"/>`
+  })
+
   return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" aria-label="NPM: 0.4.0" viewBox="0 0 ${maxWidth} ${maxHeight}">
-  <title>NPM: 0.4.0</title>
-  <g shape-rendering="crispEdges">${inputsSvg.map(({ rect: _ }) => _).join('')}</g>
-  <g fill="#fff" text-anchor="middle" font-family="Verdana,Geneva,DejaVu Sans,sans-serif" text-rendering="geometricPrecision" font-size="10">
+  <title>Module graph</title>${defs}
+  <g shape-rendering="geometricPrecision" fill="none" >${inputsLinesSvg}</g>
+  <g fill="#555" stroke="#fff" shape-rendering="geometricPrecision">${inputsSvg.map(({ rect: _ }) => _).join('')}</g>
+  <g font-family="Helvetica,sans-serif" text-rendering="geometricPrecision" font-size="11" dominant-baseline="middle" text-anchor="middle">
   ${inputsSvg.map(({ text: _ }) => _).join('')}
   </g>
   </svg>`
