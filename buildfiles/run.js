@@ -263,6 +263,7 @@ async function buildTest () {
   await Promise.all([buildDistFromEsm, buildDocsDist, buildDocsJS, buildDocsStyles])
 
   const metafile = (await buildDocsDist).metafile
+  await mkdir_p('reports')
   await writeFile('reports/module-graph.json', JSON.stringify(metafile, null, 2))
   const svg = await createModuleGraphSvg(metafile)
   await writeFile('reports/module-graph.svg', svg)
