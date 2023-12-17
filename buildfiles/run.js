@@ -915,6 +915,7 @@ async function createModuleGraphSvg (moduleGrapnJson) {
   const { default: { graphlib, layout } } = await import('@dagrejs/dagre')
   const { default: anafanafo } = await import('anafanafo')
   const padding = 5
+  const svgStokeMargin = 5
   const inputs = moduleGrapnJson.inputs
 
   const graph = new graphlib.Graph()
@@ -931,7 +932,7 @@ async function createModuleGraphSvg (moduleGrapnJson) {
       const textHeighthPx = 11
       const height = textHeighthPx + padding * 2
       const width = textWidthPx + padding * 2
-      graph.setNode(file, { label: file,  width, height })
+      graph.setNode(file, { label: file,  width: width + svgStokeMargin, height: height + svgStokeMargin })
       return [file, {
         textWidthPx, textHeighthPx, height, width,
       }]
@@ -959,7 +960,7 @@ async function createModuleGraphSvg (moduleGrapnJson) {
     }
   })
 
-  const lineArrowMarker = '<marker id="arrowhead" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="strokeWidth" markerWidth="10" markerHeight="10" orient="auto">' +
+  const lineArrowMarker = '<marker id="arrowhead" viewBox="0 0 10 10" refX="8" refY="5" markerUnits="strokeWidth" markerWidth="10" markerHeight="10" orient="auto">' +
   '<path d="M 0 0 L 10 5 L 0 10 L 2 5 z" /></marker>'
   const marker = graph.edgeCount() > 0 ? lineArrowMarker : ''
   const defs = marker ? `<defs>${marker}</defs>` : ''
@@ -967,22 +968,22 @@ async function createModuleGraphSvg (moduleGrapnJson) {
   const inputsLinesSvg = graph.edges().map(e => {
     const allPoints = [graph.node(e.v), ...graph.edge(e).points]
     const points = allPoints.map(({ x, y }) => `${x},${y}`).join(' ')
-    return `<polyline class="outer" stroke-width="2" points="${points}"/><polyline points="${points}" marker-end="url(#arrowhead)"/>`
+    return `<polyline class="outer" stroke-width="3" points="${points}"/><polyline points="${points}" marker-end="url(#arrowhead)"/><polyline points="${points}"/>`
   })
 
   return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" role="img" aria-label="NPM: 0.4.0" viewBox="0 0 ${maxWidth} ${maxHeight}">
   <style>
-    text { fill: #333; }
-    rect { fill: #ddd; stroke: #333 }
-    polyline {stroke: #333;} 
-    polyline.outer {stroke: #ddd;} 
-    #arrowhead path {stroke: #ddd; fill: #333; stroke-width:0.5} 
+    text { fill: #222; }
+    rect { fill: #ddd; stroke: #222 }
+    polyline {stroke: #ddd; stroke-linejoin: round} 
+    polyline.outer {stroke: #222;} 
+    #arrowhead path {stroke: #222; fill: #ddd; stroke-linejoin: round} 
     @media (prefers-color-scheme: dark) {
       text { fill: #eee; }
-      rect { fill: #555; stroke:#eee }
-      polyline {stroke: #ddd;} 
-      polyline.outer {stroke: #333;}   
-      #arrowhead path {stroke: #333; fill: #ddd; } 
+      rect { fill: #444; stroke:#eee }
+      polyline {stroke: #222; } 
+      polyline.outer {stroke: #eee;}   
+      #arrowhead path {stroke: #eee; fill: #222; } 
     }</style>
   <title>Module graph</title>${defs}
   <g shape-rendering="geometricPrecision" fill="none" >${inputsLinesSvg}</g>
