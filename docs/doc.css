@@ -1,19 +1,110 @@
-@import url(./code-example.css);
+@import url("./code-example.css");
 
 
-html {
-    --bg-color: #dddcdf;
+:root {
+    --bg-color: #e5e5e5;
+    --bg-code-color: #f3f3f3;
+    --bg-sidebar-color: #ddd;
+    --sidebar-border-color: #0002;
+    --bg-color-active: #edecef;
     --fg-color: #303540;
+    --fg-color-disabled: #404550;
     --resizable-border-color: #303540;
+    --tab-active-color: #007299;
+    font-family: -apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+    font-size: 1em;
 }
+
+
 
 @media (prefers-color-scheme: dark) {
-    html {
-        --bg-color: #303540;
+    :root {
+        --bg-color: #202530;
+        --bg-code-color: #303540;
+        --bg-sidebar-color: #303540;
+        --sidebar-border-color: #fff2;
+        --bg-color-active: #292d30;
         --fg-color: #dddcdf;
+        --fg-color-disabled: #ccc;
         --resizable-border-color: #dddcdf;
+        --tab-active-color: #fa5;
     }
+
+    a { color: #6ad; }
+    a:visited { color: #d8d;}
 }
+
+body {
+    margin: 0;
+    background-color: var(--bg-color);
+    color: var(--fg-color);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: row;
+    counter-reset: heading;
+}
+
+body > .sidebar {
+    background-color: var(--bg-sidebar-color);
+    border-right: var(--sidebar-border-color) 1px solid;
+}
+
+body > .content {
+    padding: 3em;
+}
+
+:not(pre) > code:not([class]), 
+:not(pre) > code.language-none {
+    background: var(--bg-code-color);
+    border-radius: 0.3em;
+    padding: .2em .4em;
+    margin: 0;
+    font-size: 0.9em;
+    white-space: break-spaces;
+}
+
+.toc {
+    position: sticky;
+    top: 0;
+    padding: 1em;
+}
+
+.toc ol {
+    counter-reset: section;
+    list-style-type: none;
+    padding-left: 1em;
+    white-space: nowrap;
+}
+
+.toc ol li::before {
+    counter-increment: section; 
+    content: counters(section, ".") ". ";
+}
+
+.toc li a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.toc li a:hover {
+    text-decoration: underline;
+}
+
+h2::before {
+	content: counter(heading)". ";
+	counter-increment: heading;
+}
+
+h2 {
+	counter-reset: subheading;
+}
+
+h3::before {
+	content: counter(heading)"." counter(subheading)". ";
+	counter-increment: subheading;
+}
+
+
 
 .badges-section img {
     object-fit: contain;
@@ -21,11 +112,6 @@ html {
 
 .badges-section a {
     display: inline-block;
-}
-
-body {
-    background-color: var(--bg-color);
-    color: var(--fg-color);
 }
 
 h1 {
