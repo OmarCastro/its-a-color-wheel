@@ -14,10 +14,9 @@
             <div class="sidebar">
     
             <div class="toc">
-                <strong>Table of contents</strong>
-    
-                <ul ss:toc></ul>
-    
+                <p><strong>Documentation</strong></p>
+                <template ss:toc></template>
+                <p><strong><a href="contributing">How to contribute</a></strong></p>        
             </div>
         </div>
         <div class="content">
@@ -63,12 +62,37 @@
 
         </section>
 
-        <section>
-            <h2> Getting started </h2>
 
-            <pre><code class="language-markup keep-markup">&lt;script type="module" src="https://cdn.jsdelivr.net/gh/OmarCastro/its-a-color-wheel@0.3.0/dist/browser/color-wheel.element.min.js?named=<span class="component-name-edit" contenteditable="true">color-wheel</span>">&lt;/script></code></pre>
+        <section class="section section--getting-started" ss:markdown>
+            ## Getting started
+            ### CDN
+
+            To use a CDN all you need is to add the following code in the HTML page:
+
+            <pre><code class="language-markup keep-markup">&lt;script type="module" src="https://cdn.jsdelivr.net/gh/OmarCastro/its-a-color-wheel@0.4.0/dist/color-wheel.element.min.js?named=<span class="component-name-edit" contenteditable="true">color-wheel</span>">&lt;/script></code></pre>
+
+            As noted, there is a query string `named` to set the component name, if it is not defined then the component will not be registered and you would need to import it and register manually, like with the following code: 
+
+            <pre><code class="language-js keep-markup">import element from 'https://cdn.jsdelivr.net/gh/OmarCastro/its-a-color-wheel@0.4.0/dist/esm/color-wheel.element.js'
+
+            customElements.define('<span class="component-name-edit" contenteditable="true">color-wheel</span>', element)</code></pre>
+                
+                
+            ### Nodejs
+
+            If you wish to import from nodejs and use a bundler, you can install the `its-a-color-wheel` package
+
+            <pre><code class="language-shell keep-markup">npm install its-a-color-wheel</code></pre>
+
+            Not all bundlers support query strings, it is recommended to import and register the component, like the following code:
+
+            <pre><code class="language-js keep-markup">import element from 'its-a-color-wheel'
+
+            customElements.define('<span class="component-name-edit" contenteditable="true">color-wheel</span>', element)</code></pre>
+
         </section>
-
+    
+    
         <section>
             <h2> Features </h2>
 

@@ -282,7 +282,10 @@ async function buildDocs () {
 
   logStage('build docs html')
 
-  await exec(`${process.argv[0]} buildfiles/scripts/build-html.js index.html`)
+  await Promise.all([
+    exec(`${process.argv[0]} buildfiles/scripts/build-html.js index.html`),
+    exec(`${process.argv[0]} buildfiles/scripts/build-html.js contributing.html`),
+  ])
 
   logStage('move to final dir')
 
