@@ -7,9 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Fixed
+### Added
 
-- reduce npm package size
+- reduce npm package size from 1.26 MB to 99.5 kB (unpacked size)
+- clean package.json on npm package
 - improve documentation
 
 ## [0.4.0] - 2023-12-11
