@@ -6,21 +6,6 @@
 <img src="https://img.shields.io/github/v/release/OmarCastro/its-a-color-wheel?style=for-the-badge&logoColor=%23333&labelColor=%23ccc&color=%23007ec6">
 </picture></a>
 
+A color wheel with color picking feature, for both big and small screens
+
 full documentation on: https://omarcastro.github.io/its-a-color-wheel
-
-A small project to show a color wheel with a color picking feature
-
-Features
-
- - Different ui for big and small screens
- - Support for HSL and HSV
-
-Getting started
-
-## CDN
-
-import the color wheel with the `named` query string, the name should be at your choosing, if the name is empty, the compponent will not be registered
-
-```html
-<script type="module" src="https://cdn.jsdelivr.net/gh/OmarCastro/its-a-color-wheel@0.3.0/dist/browser/color-wheel.element.min.js?named=color-wheel</script>
-```
