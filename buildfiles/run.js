@@ -409,6 +409,7 @@ async function prepareRelease () {
   mkdir_p('package/content')
   await cp_R('dist', 'package/content/dist')
   await cp_R('README.md', 'package/content/README.md')
+  await cp_R('LICENSE', 'package/content/LICENSE')
   const files = (await getFilesAsArray('src')).map(path => relative(pathFromProject('.'), path))
   await Promise.all(files.filter(path => !path.includes('.spec.')).map(path => fs.cp(path, `package/content/${path}`)))
   await writeFile('package/content/package.json', JSON.stringify({ ...packageJson, devDependencies: undefined, scripts: undefined, directories: undefined }, null, 2))
