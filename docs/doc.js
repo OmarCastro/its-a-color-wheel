@@ -42,7 +42,7 @@ const reactInnerRadiusChange = (event) => {
   const innerRadius = (event.target).closest('.example .inner-radius-edit')
   if (innerRadius == null) { return false }
   const innerRadiusText = innerRadius.textContent
-  getExampleColorWheel(innerRadius).forEach(ref => ref.style.setProperty('--color-wheel-inner-radius', `${innerRadiusText}%`))
+  getExampleColorWheel(innerRadius).forEach(ref => ref.style.setProperty('--color-wheel-inner-radius', `${innerRadiusText}`))
   return true
 }
 
