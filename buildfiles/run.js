@@ -19,7 +19,7 @@ To help navigate this file is divided by sections:
 */
 import process from 'node:process'
 import fs, { readFile as fsReadFile, writeFile } from 'node:fs/promises'
-import { resolve, basename, dirname } from 'node:path'
+import { resolve, basename, dirname, relative } from 'node:path'
 import { existsSync, readFileSync } from 'node:fs'
 import { promisify } from 'node:util'
 import { execFile as baseExecFile, exec as baseExec, spawn } from 'node:child_process'
@@ -171,7 +171,7 @@ async function execTests () {
   ]
 
   logStage('fix report styles')
-  const files = Array.from(await getFiles('reports/coverage/final'))
+  const files = await getFilesAsArray('reports/coverage/final')
   const cpBase = files.filter(path => basename(path) === 'base.css').map(path => fs.cp('buildfiles/assets/coverage-report-base.css', path))
   const cpPrettify = files.filter(path => basename(path) === 'prettify.css').map(path => fs.cp('buildfiles/assets/coverage-report-prettify.css', path))
   await Promise.all([rmTmp, rmBak, ...badges, ...cpBase, ...cpPrettify])
@@ -392,7 +392,9 @@ async function prepareRelease () {
   await cleanRelease()
   logStartStage('release:prepare', 'check version')
   const publishedVersion = await getLatestPublishedVersion()
-  const currentVersion = (await readPackageJson()).version
+  const packageJson = await readPackageJson()
+  const currentVersion = packageJson.version
+
   const { gt } = await import('semver')
   if (!gt(currentVersion, publishedVersion)) {
     throw Error(`current version (${currentVersion}) must be higher than latest published version (${publishedVersion})`)
@@ -403,12 +405,21 @@ async function prepareRelease () {
   await buildDocs()
   logStartStage('release:prepare', 'create dist')
   await cp_R('build/dist', 'dist')
+  logStage('create package')
+  mkdir_p('package/content')
+  await cp_R('dist', 'package/content/dist')
+  await cp_R('README.md', 'package/content/README.md')
+  const files = (await getFilesAsArray('src')).map(path => relative(pathFromProject('.'), path))
+  await Promise.all(files.filter(path => !path.includes('.spec.')).map(path => fs.cp(path, `package/content/${path}`)))
+  await writeFile('package/content/package.json', JSON.stringify({ ...packageJson, devDependencies: undefined, scripts: undefined, directories: undefined }, null, 2))
+  await cmdSpawn('npm pack --pack-destination "' + pathFromProject('package') + '"', { cwd: pathFromProject('package/content') })
   logEndStage()
 }
 
 async function cleanRelease () {
   logStartStage('release:clean', 'remove dist')
   await rm_rf('dist')
+  await rm_rf('package')
   logEndStage()
 }
 
@@ -654,6 +665,11 @@ async function minifyCss (cssText) {
 
 // @section 8 exec utilities
 
+/**
+ * @param {string} command
+ * @param {import('node:child_process').ExecFileOptions} options
+ * @returns {Promise<number>} code exit
+ */
 function cmdSpawn (command, options = {}) {
   const p = spawn('/bin/sh', ['-c', command], { stdio: 'inherit', ...options })
   return new Promise((resolve) => { p.on('exit', resolve) })
@@ -685,6 +701,12 @@ async function * getFiles (dir) {
       yield res
     }
   }
+}
+
+async function getFilesAsArray (dir) {
+  const arr = []
+  for await (const i of getFiles(dir)) arr.push(i)
+  return arr
 }
 
 async function * watchDirs (...dirs) {
