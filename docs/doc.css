@@ -123,6 +123,10 @@ section.preview {
     text-align: center;
 }
 
+label:not(:has(.checkbox--ui-mode:checked)) + .resizable {
+    --ui-mode: "desktop"
+}
+
 label:has(.checkbox--ui-mode:checked) + .resizable {
     --ui-mode: "mobile"
 }
@@ -137,6 +141,21 @@ label:has(.checkbox--ui-mode:checked) + .resizable {
     width: fit-content;
     min-height: fit-content;
     height: fit-content;
+}
+
+.resizable::after {
+    display: block;
+    position: absolute;
+    bottom: 1px;
+    right: 1px;
+    border: solid transparent 10px;
+    padding: 0;
+    content: " ";
+    z-index: -2;
+    width: 0;
+    height: 0;
+    border-left-color: var(--resizable-border-color);
+    transform: translate(50%, 50%) rotate(45deg);
 }
 
 .resizable color-wheel {
@@ -159,8 +178,9 @@ label:has(.checkbox--ui-mode:checked) + .resizable {
 .example {
     display: flex;
     flex-wrap: wrap;
-    justify-content:space-between;
+    justify-content:center;
     align-items: stretch;
+    gap: 1em;
 }
 
 span[contenteditable="true"] {
