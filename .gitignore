@@ -30,3 +30,6 @@ coverage
 
 # Ignore temporary files
 .tmp
+
+# npm package publish folder
+/package
