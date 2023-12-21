@@ -106,12 +106,18 @@ h3::before {
 
 
 
-.badges-section img {
+.section--badge {
+    text-align: center
+}
+
+.section--badge img {
     object-fit: contain;
 }
 
-.badges-section a {
+.section--badge a {
     display: inline-block;
+    margin-right: 0.25em;
+    margin-left: 0.25em;
 }
 
 h1 {
