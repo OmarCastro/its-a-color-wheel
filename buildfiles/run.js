@@ -650,7 +650,7 @@ async function validateFiles ({ patterns, onlyChanged, validation }) {
 // @section 7 minifiers
 
 async function minifyHtml (htmlText) {
-  const { minify } = await import('html-minifier')
+  const { minify } = await import('html-minifier-terser')
   return minify(htmlText, {
     removeAttributeQuotes: true,
     useShortDoctype: true,
