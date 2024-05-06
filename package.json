@@ -49,7 +49,6 @@
     "eslint-plugin-sonarjs": "^0.25.1",
     "expect": "^29.7.0",
     "glob": "^10.3.12",
-    "html-minifier-terser": "^7.2.0",
     "image-size": "^1.1.1",
     "jsdom": "^24.0.0",
     "marked": "^12.0.2",
