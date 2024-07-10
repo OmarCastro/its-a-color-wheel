@@ -1,4 +1,4 @@
-/* eslint-disable camelcase, max-lines-per-function, jsdoc/require-jsdoc, jsdoc/require-param-description */
+/* eslint-disable, jsdoc/require-jsdoc, jsdoc/require-param-description */
 import Prism from 'prismjs'
 import { minimatch } from 'minimatch'
 import { imageSize } from 'image-size'
@@ -211,6 +211,11 @@ const minifiedHtml = '<!doctype html>' + minifyDOM(document.documentElement).out
 
 fs.writeFileSync(`${docsOutputPath}/${process.argv[2]}`, minifiedHtml)
 
+/**
+ *
+ * @param templateStrings
+ * @param {...any} values
+ */
 function dedent (templateStrings, ...values) {
   const matches = []
   const strings = typeof templateStrings === 'string' ? [templateStrings] : templateStrings.slice()
@@ -235,6 +240,10 @@ function dedent (templateStrings, ...values) {
   return string
 }
 
+/**
+ *
+ * @param dir
+ */
 async function * getFiles (dir) {
   const dirents = await readdir(dir, { withFileTypes: true })
 

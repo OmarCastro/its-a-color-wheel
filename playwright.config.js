@@ -32,7 +32,7 @@ const config = {
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: [
     ['html', { open: 'never', outputFolder: 'reports/playwright-report' }],
-    ['json', {  outputFile: 'reports/test-results/test-results.json' }],
+    ['json', { outputFile: 'reports/test-results/test-results.json' }],
     ['junit', { outputFile: 'reports/test-results/results.xml' }],
     ['list'],
   ],

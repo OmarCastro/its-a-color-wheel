@@ -1,5 +1,5 @@
 #!/usr/bin/env -S node --input-type=module
-/* eslint-disable camelcase, max-lines-per-function, jsdoc/require-jsdoc, jsdoc/require-param-description */
+/* eslint-disable camelcase, jsdoc/require-jsdoc, jsdoc/require-param-description */
 /*
 This file is purposely large to easily move the code to multiple projects, its build code, not production.
 To help navigate this file is divided by sections:
@@ -593,7 +593,9 @@ async function lintStyles ({ onlyChanged }) {
   const filesLinted = result.results.length
   process.stdout.write(`linted ${filesLinted} files. `)
 
-  const output = stylelint.formatters.string(result.results)
+  const stringFormatter = await stylelint.formatters.string
+
+  const output = stringFormatter(result.results)
   if (output) {
     console.log('\n' + output)
   } else {
@@ -1045,7 +1047,7 @@ async function createModuleGraphSvg (moduleGrapnJson) {
       const textHeighthPx = 11
       const height = textHeighthPx + padding * 2
       const width = textWidthPx + padding * 2
-      graph.setNode(file, { label: file,  width: width + svgStokeMargin, height: height + svgStokeMargin })
+      graph.setNode(file, { label: file, width: width + svgStokeMargin, height: height + svgStokeMargin })
       return [file, {
         textWidthPx, textHeighthPx, height, width,
       }]
