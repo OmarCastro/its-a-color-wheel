@@ -27,20 +27,5 @@ export default [
       ecmaVersion: 'latest',
       sourceType: 'module',
     },
-
-    rules: {
-      '@stylistic/comma-dangle': ['error', 'always-multiline'],
-
-      '@stylistic/key-spacing': ['error', {
-        mode: 'minimum',
-      }],
-
-      '@stylistic/no-multi-spaces': ['error', {
-        exceptions: {
-          Property: true,
-          ObjectExpression: true,
-        },
-      }],
-    },
   },
 ]

@@ -121,7 +121,7 @@ async function execDevEnvironment ({ openBrowser = false } = {}) {
 
   const watcher = watchDirs(
     new URL('src', projectPathURL).pathname,
-    new URL('docs', projectPathURL).pathname,
+    new URL('docs', projectPathURL).pathname
   )
 
   for await (const change of watcher) {
@@ -1051,7 +1051,7 @@ async function createModuleGraphSvg (moduleGrapnJson) {
       return [file, {
         textWidthPx, textHeighthPx, height, width,
       }]
-    }),
+    })
   )
 
   Object.entries(inputs).forEach(([file, info]) => {
