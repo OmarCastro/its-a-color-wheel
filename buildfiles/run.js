@@ -852,11 +852,11 @@ async function getLatestReleasedVersion () {
 
 function getBadgeColors () {
   getBadgeColors.cache ??= {
-    green: '#007700',
+    green: '#060',
     yellow: '#777700',
     orange: '#aa0000',
     red: '#aa0000',
-    blue: '#007ec6',
+    blue: '#05a',
   }
   return getBadgeColors.cache
 }
@@ -904,17 +904,19 @@ function badgeColor (pct) {
   return 'red'
 }
 
-async function svgStyle (color) {
+async function svgStyle () {
   const { document } = await loadDom()
   const style = document.createElement('style')
   style.innerHTML = `
   text { fill: #333; }
+  .icon {fill: #444; }
   rect.label { fill: #ccc; }
-  rect { fill: ${getLightVersionOfBadgeColor(color) || color} }
+  rect.body { fill: var(--light-fill); }
   @media (prefers-color-scheme: dark) {
     text { fill: #fff; }
+    .icon {fill: #ccc; }
     rect.label { fill: #555; stroke: none; }
-    rect { fill: ${color} }
+    rect.body { fill: var(--dark-fill); }
   }
   `.replaceAll(/\n+\s*/g, '')
   return style
@@ -964,10 +966,11 @@ async function makeBadgeForCoverages (path) {
     label: 'coverage',
     message: `${json.total.lines.pct}%`,
     color: badgeColor(json.total.lines.pct),
+    logo: asciiIconSvg('🛡︎'),
   })
 
   const badgeWrite = writeFile(`${path}/coverage-badge.svg`, svg)
-  const a11yBadgeWrite = writeFile(`${path}/coverage-badge-a11y.svg`, await applyA11yTheme(svg))
+  const a11yBadgeWrite = writeFile(`${path}/coverage-badge-a11y.svg`, await applyA11yTheme(svg, { replaceIconToText: '🛡︎' }))
   await Promise.all([badgeWrite, a11yBadgeWrite])
 }
 
@@ -982,9 +985,11 @@ async function makeBadgeForTestResult (path) {
     label: 'tests',
     message: `${passedAmount} / ${testAmount}`,
     color: passed ? '#007700' : '#aa0000',
+    logo: asciiIconSvg('✔'),
+    logoWidth: 16,
   })
   const badgeWrite = writeFile(`${path}/test-results-badge.svg`, svg)
-  const a11yBadgeWrite = writeFile(`${path}/test-results-badge-a11y.svg`, await applyA11yTheme(svg))
+  const a11yBadgeWrite = writeFile(`${path}/test-results-badge-a11y.svg`, await applyA11yTheme(svg, { replaceIconToText: '✔' }))
   await Promise.all([badgeWrite, a11yBadgeWrite])
 }
 
@@ -992,13 +997,14 @@ async function makeBadgeForLicense (path) {
   const pkg = await readPackageJson()
 
   const svg = await makeBadge({
-    label: 'license',
+    label: ' license',
     message: pkg.license,
     color: '#007700',
+    logo: asciiIconSvg('🏛'),
   })
 
   const badgeWrite = writeFile(`${path}/license-badge.svg`, svg)
-  const a11yBadgeWrite = writeFile(`${path}/license-badge-a11y.svg`, await applyA11yTheme(svg))
+  const a11yBadgeWrite = writeFile(`${path}/license-badge-a11y.svg`, await applyA11yTheme(svg, { replaceIconToText: '🏛' }))
   await Promise.all([badgeWrite, a11yBadgeWrite])
 }
 
