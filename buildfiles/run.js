@@ -168,6 +168,8 @@ async function execTests () {
     makeBadgeForTestResult(pathFromProject('reports/test-results')),
     makeBadgeForLicense(pathFromProject('reports')),
     makeBadgeForNPMVersion(pathFromProject('reports')),
+    makeBadgeForRepo(pathFromProject('reports')),
+    makeBadgeForRelease(pathFromProject('reports')),
   ]
 
   logStage('fix report styles')
@@ -830,6 +832,22 @@ async function readPackageJson () {
   return await readFile(pathFromProject('package.json')).then(str => JSON.parse(str))
 }
 
+async function getLatestReleasedVersion () {
+  const changelogContent = await readFile(pathFromProject('CHANGELOG.md'))
+  const versions = changelogContent.split('\n')
+    .map(line => {
+      const match = line.match(/^## \[([0-9]+\.[[0-9]+\.[[0-9]+)]\s+-\s+([^\s]+)/)
+      if (!match) {
+        return null
+      }
+      return { version: match[1], releaseDate: match[2] }
+    }).filter(version => !!version)
+  const releasedVersions = versions.filter(version => {
+    return version.releaseDate.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}/)
+  })
+  return releasedVersions[0]
+}
+
 // @section 11 badge utilities
 
 function getBadgeColors () {
@@ -843,8 +861,22 @@ function getBadgeColors () {
   return getBadgeColors.cache
 }
 
+function svgToDataURI (svg) {
+  const svgURI = svg
+    .replaceAll('<', '%3C')
+    .replaceAll('>', '%3E')
+    .replaceAll('{', '%7B')
+    .replaceAll('}', '%7D')
+    .replaceAll('#', '%23')
+  return `data:image/svg+xml,${svgURI}`
+}
+
+function asciiIconSvg (asciicode) {
+  return svgToDataURI(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'><style>text {font-size: 10px; fill: #333;} @media (prefers-color-scheme: dark) {text { fill: #ccc; }} </style><text x='0' y='10'>${asciicode}</text></svg>`)
+}
+
 async function makeBadge (params) {
-  const { makeBadge: libMakeBadge } = await import('badge-maker')
+  const { default: libMakeBadge } = await import('badge-maker/lib/make-badge.js')
   return libMakeBadge({
     style: 'for-the-badge',
     ...params,
@@ -888,13 +920,25 @@ async function svgStyle (color) {
   return style
 }
 
-async function applyA11yTheme (svgContent) {
+async function applyA11yTheme (svgContent, options = {}) {
   const { document } = await loadDom()
   const { body } = document
   body.innerHTML = svgContent
   const svg = body.querySelector('svg')
   if (!svg) { return svgContent }
   svg.querySelectorAll('text').forEach(el => el.removeAttribute('fill'))
+  if (options.replaceIconToText) {
+    const img = svg.querySelector('image')
+    if (img) {
+      const text = document.createElementNS('http://www.w3.org/2000/svg', 'text')
+      text.innerHTML = options.replaceIconToText
+      text.setAttribute('transform', 'scale(.15)')
+      text.classList.add('icon')
+      text.setAttribute('x', '90')
+      text.setAttribute('y', '125')
+      img.replaceWith(text)
+    }
+  }
   const rects = Array.from(svg.querySelectorAll('rect'))
   rects.slice(0, 1).forEach(el => {
     el.classList.add('label')
@@ -905,8 +949,11 @@ async function applyA11yTheme (svgContent) {
   rects.slice(1).forEach(el => {
     color = el.getAttribute('fill') || colors.red
     el.removeAttribute('fill')
+    el.classList.add('body')
+    el.style.setProperty('--dark-fill', color)
+    el.style.setProperty('--light-fill', getLightVersionOfBadgeColor(color))
   })
-  svg.prepend(await svgStyle(color))
+  svg.prepend(await svgStyle())
 
   return svg.outerHTML
 }
@@ -958,14 +1005,42 @@ async function makeBadgeForLicense (path) {
 async function makeBadgeForNPMVersion (path) {
   const version = await getLatestPublishedVersion()
 
+  const npmIconSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 21 21"><style>g {fill: #333;stroke:#333;} @media (prefers-color-scheme: dark) {g { fill: #ccc;stroke:#ccc; }} </style><g><rect x="2" y="2" width="17" height="17" fill="transparent" stroke-width="4"/><rect x="10" y="7" width="4" height="11" stroke-width="0"/></g></svg>'
+
   const svg = await makeBadge({
     label: 'npm',
     message: version,
-    color: '#007ec6',
+    color: getBadgeColors().blue,
+    logo: svgToDataURI(npmIconSvg),
   })
 
   const badgeWrite = writeFile(`${path}/npm-version-badge.svg`, svg)
   const a11yBadgeWrite = writeFile(`${path}/npm-version-badge-a11y.svg`, await applyA11yTheme(svg))
+  await Promise.all([badgeWrite, a11yBadgeWrite])
+}
+
+async function makeBadgeForRepo (path) {
+  const svg = await makeBadge({
+    label: 'Code Repository',
+    message: 'Github',
+    color: getBadgeColors().blue,
+    logo: asciiIconSvg('❮❯'),
+  })
+  const badgeWrite = writeFile(`${path}/repo-badge.svg`, svg)
+  const a11yBadgeWrite = writeFile(`${path}/repo-badge-a11y.svg`, await applyA11yTheme(svg, { replaceIconToText: '❮❯' }))
+  await Promise.all([badgeWrite, a11yBadgeWrite])
+}
+
+async function makeBadgeForRelease (path) {
+  const releaseVersion = await getLatestReleasedVersion()
+  const svg = await makeBadge({
+    label: 'Release',
+    message: releaseVersion ? releaseVersion.version : 'Unreleased',
+    color: getBadgeColors().blue,
+    logo: asciiIconSvg('⛴'),
+  })
+  const badgeWrite = writeFile(`${path}/repo-release.svg`, svg)
+  const a11yBadgeWrite = writeFile(`${path}/repo-release-a11y.svg`, await applyA11yTheme(svg, { replaceIconToText: '⛴' }))
   await Promise.all([badgeWrite, a11yBadgeWrite])
 }
 
