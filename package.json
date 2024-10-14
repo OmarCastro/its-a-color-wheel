@@ -37,14 +37,14 @@
   "homepage": "https://github.com/OmarCastro/its-a-color-wheel#readme",
   "devDependencies": {
     "@dagrejs/dagre": "^1.1.4",
-    "@playwright/test": "^1.47.2",
+    "@playwright/test": "^1.48.0",
     "anafanafo": "^2.0.0",
-    "badge-maker": "^4.0.0",
+    "badge-maker": "^4.1.0",
     "c8": "^10.1.2",
     "chokidar": "^4.0.1",
     "esbuild": "^0.24.0",
-    "eslint": "^9.11.1",
-    "eslint-plugin-jsdoc": "^50.3.1",
+    "eslint": "^9.12.0",
+    "eslint-plugin-jsdoc": "^50.4.1",
     "eslint-plugin-sonarjs": "^1.0.4",
     "expect": "^29.7.0",
     "glob": "^11.0.0",
@@ -57,8 +57,8 @@
     "open": "^10.1.0",
     "prismjs": "^1.29.0",
     "semver": "^7.6.3",
-    "stylelint": "^16.9.0",
+    "stylelint": "^16.10.0",
     "stylelint-config-standard": "^36.0.1",
-    "typescript": "^5.6.2"
+    "typescript": "^5.6.3"
   }
 }
