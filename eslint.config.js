@@ -1,6 +1,5 @@
 import globals from 'globals'
 import neostandard from 'neostandard'
-import sonarjs from 'eslint-plugin-sonarjs'
 import jsdoc from 'eslint-plugin-jsdoc'
 
 export default [
@@ -16,7 +15,6 @@ export default [
   },
   ...neostandard(),
   jsdoc.configs['flat/recommended-typescript-flavor'],
-  sonarjs.configs.recommended,
   {
     languageOptions: {
       globals: {

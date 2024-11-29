@@ -45,7 +45,6 @@
     "esbuild": "^0.24.0",
     "eslint": "^9.16.0",
     "eslint-plugin-jsdoc": "^50.6.0",
-    "eslint-plugin-sonarjs": "^1.0.4",
     "expect": "^29.7.0",
     "glob": "^11.0.0",
     "image-size": "^1.1.1",
