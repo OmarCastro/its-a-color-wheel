@@ -624,15 +624,15 @@ async function minifyCss (cssText) {
   const result = await esbuild.transform(cssText, { loader: 'css', minify: true })
   return result.code
 }
-
 /**
  * Minifies the DOM tree
  * @param {Element} domElement - target DOM tree root element
  * @returns {Element} root element of the minified DOM
  */
-async function minifyDOM (domElement) {
-  const { window } = await loadDom()
-  const { TEXT_NODE, ELEMENT_NODE, COMMENT_NODE } = window.Node
+function minifyDOM (domElement) {
+  const window = domElement.ownerDocument.defaultView
+  const Node = window.Node
+  const { TEXT_NODE, ELEMENT_NODE, COMMENT_NODE } = Node
 
   /** @typedef {"remove-blank" | "1-space" | "pre"} WhitespaceMinify */
   /**
@@ -694,10 +694,10 @@ async function minifyDOM (domElement) {
     const { whitespaceMinify } = minificationState
     // we have to make a copy of the iterator for traversal, because we cannot
     // iterate through what we'll be modifying at the same time
-    const values = [...currentElement?.childNodes?.values()]
+    const values = [...currentElement?.childNodes?.values() || []]
     for (const node of values) {
       if (node.nodeType === COMMENT_NODE) {
-      // remove comments node
+        // remove comments node
         currentElement.removeChild(node)
       } else if (node.nodeType === TEXT_NODE) {
         minifyTextNode(node, whitespaceMinify)
