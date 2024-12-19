@@ -629,8 +629,8 @@ async function minifyCss (cssText) {
  * @param {Element} domElement - target DOM tree root element
  * @returns {Element} root element of the minified DOM
  */
-function minifyDOM (domElement) {
-  const window = domElement.ownerDocument.defaultView
+async function minifyDOM (domElement) {
+  const { window } = await loadDom()
   const Node = window.Node
   const { TEXT_NODE, ELEMENT_NODE, COMMENT_NODE } = Node
 
