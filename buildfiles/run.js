@@ -13,9 +13,10 @@ To help navigate this file is divided by sections:
 @section 8 exec utilities
 @section 9 filesystem utilities
 @section 10 npm utilities
-@section 11 badge utilities
-@section 12 module graph utilities
-@section 13 build tools plugins
+@section 11 versioning utilities
+@section 12 badge utilities
+@section 13 module graph utilities
+@section 14 build tools plugins
 */
 import process from 'node:process'
 import fs, { readFile as fsReadFile, writeFile } from 'node:fs/promises'
@@ -832,6 +833,8 @@ async function readPackageJson () {
   return await readFile(pathFromProject('package.json')).then(str => JSON.parse(str))
 }
 
+// @section 11 versioning utilities
+
 async function getLatestReleasedVersion () {
   const changelogContent = await readFile(pathFromProject('CHANGELOG.md'))
   const versions = changelogContent.split('\n')
@@ -848,7 +851,7 @@ async function getLatestReleasedVersion () {
   return releasedVersions[0]
 }
 
-// @section 11 badge utilities
+// @section 12 badge utilities
 
 function getBadgeColors () {
   getBadgeColors.cache ??= {
@@ -1064,7 +1067,7 @@ async function loadDom () {
   return loadDom.cache
 }
 
-// @section 12 module graph utilities
+// @section 13 module graph utilities
 
 async function createModuleGraphSvg (moduleGrapnJson) {
   const { default: { graphlib, layout } } = await import('@dagrejs/dagre')
@@ -1149,7 +1152,7 @@ async function createModuleGraphSvg (moduleGrapnJson) {
   </svg>`
 }
 
-// @section 13 build tools plugins
+// @section 14 build tools plugins
 
 /**
  * @returns {Promise<import('esbuild').Plugin>} - esbuild plugin
