@@ -123,15 +123,16 @@ promises.push(...queryAll('img[ss:badge-attrs]').map(async (element) => {
   const svgText = await readFile(`${docsOutputPath}/${imageSrc}`, 'utf8')
   const div = document.createElement('div')
   div.innerHTML = svgText
+  const badgeAttrs = element.getAttribute('ss:badge-attrs').split(/[, ]+/)
   element.removeAttribute('ss:badge-attrs')
   const svg = div.querySelector('svg')
   if (!svg) { throw Error(`${docsOutputPath}/${imageSrc} is not a valid svg`) }
 
   const alt = svg.getAttribute('aria-label')
-  if (alt) { element.setAttribute('alt', alt) }
+  if (alt && !badgeAttrs.includes('-alt')) { element.setAttribute('alt', alt) }
 
   const title = svg.querySelector('title')?.textContent
-  if (title) { element.setAttribute('title', title) }
+  if (title && !badgeAttrs.includes('-title')) { element.setAttribute('title', title) }
 }))
 
 queryAll('link[href][rel="stylesheet"][ss:inline]').forEach(element => {
