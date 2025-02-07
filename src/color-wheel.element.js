@@ -1,5 +1,4 @@
 import { calculateDistanceBetween2Points, CircleInfo } from './geometry.js'
-import { shadowDomCustomCssVariableObserver, cleanPropertyValue } from './observe-css-var.feature.js'
 import html from './color-wheel.element.html'
 import css from './color-wheel.element.css'
 
@@ -17,8 +16,21 @@ let loadStyles = () => {
   return sheet
 }
 
-const uiModeObserver = shadowDomCustomCssVariableObserver('--ui-mode', ({ target }) => target instanceof ColorWheelElement && updateContainerUIModeClass(target))
-const defaultUiModeObserver = shadowDomCustomCssVariableObserver('--default-ui-mode', ({ target }) => target instanceof ColorWheelElement && updateContainerUIModeClass(target))
+/**
+ *
+ * @param {TransitionEvent} event - property transition event
+ */
+function uiModeTransitionEventHandler (event) {
+  const { target } = event
+  if (!(target instanceof HTMLElement)) return
+  const rootNode = target.getRootNode()
+  if (!(rootNode instanceof ShadowRoot)) return
+  const { host } = rootNode
+  if (host instanceof ColorWheelElement) {
+    updateContainerUIModeClass(host)
+  }
+}
+
 /** @type {(shadowRoot: ParentNode | null, selector: string) => HTMLElement } */
 const queryRequired = (shadowRoot, selector) => {
   if (!shadowRoot) { throw new Error(`Color-wheel: Error from shadowDOM: parent node is ${shadowRoot}`) }
@@ -45,11 +57,11 @@ class ColorWheelElement extends HTMLElement {
     }
     const wheelStyle = window.getComputedStyle(wheel)
 
-    uiModeObserver.observe(this)
-    defaultUiModeObserver.observe(this)
     updateContainerUIModeClass(this)
     reflectLightness(this)
     reflectValue(this)
+
+    getContainer(this).addEventListener('transitionstart', uiModeTransitionEventHandler)
 
     const getWheelCenterPoint = () => {
       const pointerBox = wheelContainer.getBoundingClientRect()
@@ -198,13 +210,13 @@ class ColorWheelElement extends HTMLElement {
 
   get uiMode () {
     const computedStyle = getComputedStyle(getContainer(this))
-    const uiMode = cleanPropertyValue(computedStyle.getPropertyValue('--ui-mode'))
+    const uiMode = computedStyle.getPropertyValue('--ui-mode').trim()
     switch (uiMode) {
       case 'desktop':
       case 'mobile':
         return uiMode
     }
-    return cleanPropertyValue(computedStyle.getPropertyValue('--default-ui-mode'))
+    return computedStyle.getPropertyValue('--default-ui-mode').trim()
   }
 
   get hue () {
