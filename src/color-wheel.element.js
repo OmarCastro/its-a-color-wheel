@@ -332,3 +332,34 @@ if (elementName) {
     customElements.define(elementName, ColorWheelElement)
   }
 }
+
+// fix for transition allow-discrete on chromium (https://issues.chromium.org/issues/360159391)
+// =============================================================================================
+
+try {
+  CSS.registerProperty({
+    name: '--default-ui-mode',
+    syntax: '*',
+    inherits: false,
+  })
+} catch (e) {
+  if (e instanceof DOMException) {
+  // property most likely registered, ignore it
+  } else {
+    throw e // re-throw the error unchanged
+  }
+}
+
+try {
+  CSS.registerProperty({
+    name: '--ui-mode',
+    syntax: '*',
+    inherits: true,
+  })
+} catch (e) {
+  if (e instanceof DOMException) {
+  // property most likely registered, ignore it
+  } else {
+    throw e // re-throw the error unchanged
+  }
+}
