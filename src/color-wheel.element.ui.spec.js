@@ -36,9 +36,9 @@ test('value ui-mode visual testing', async ({ page }) => {
   const testView = page.locator('.test--ui-mode .test__view')
   const colorWheel = testView.locator('color-wheel')
 
-  await testView.evaluate(node => node.setAttribute('style', '--ui-mode: "desktop"'))
+  await testView.evaluate(node => node.setAttribute('style', '--ui-mode: desktop'))
   await expect.soft(await colorWheel.screenshot()).toMatchSnapshot('color-wheel-ui-mode-desktop.png')
-  await testView.evaluate(node => node.setAttribute('style', '--ui-mode: "mobile"'))
+  await testView.evaluate(node => node.setAttribute('style', '--ui-mode: mobile'))
   await expect.soft(await colorWheel.screenshot()).toMatchSnapshot('color-wheel-ui-mode-mobile.png')
 })
 
