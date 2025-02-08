@@ -30,7 +30,7 @@ const reactUIModeChange = (event) => {
   const uiMode = (event.target).closest('.example .ui-mode-edit')
   if (uiMode == null) { return false }
   const uiModeText = uiMode.textContent
-  getExampleColorWheel(uiMode).forEach(ref => ref.style.setProperty('--ui-mode', `"${uiModeText}"`))
+  getExampleColorWheel(uiMode).forEach(ref => ref.style.setProperty('--ui-mode', uiModeText))
   return true
 }
 

@@ -130,11 +130,11 @@ section.preview {
 }
 
 label:not(:has(.checkbox--ui-mode:checked)) + .resizable {
-    --ui-mode: "desktop"
+    --ui-mode: desktop
 }
 
 label:has(.checkbox--ui-mode:checked) + .resizable {
-    --ui-mode: "mobile"
+    --ui-mode: mobile
 }
 
 .resizable {
@@ -170,11 +170,11 @@ label:has(.checkbox--ui-mode:checked) + .resizable {
 }
 
 .ui-mode--mobile {
-    --ui-mode: "mobile"
+    --ui-mode: mobile
 }
 
 .ui-mode--desktop {
-    --ui-mode: "desktop"
+    --ui-mode: desktop
 }
 
 .inner-radius--custom {
