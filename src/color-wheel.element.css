@@ -11,7 +11,7 @@
     --value: 100;
     --lightness: 50;
     --saturation: 100;
-    --default-ui-mode: "desktop"
+    --default-ui-mode: desktop
 }
 
 :host([rotate-wheel]) {
@@ -21,7 +21,7 @@
 /* Smartphones (portrait and landscape) ----------- */
 @media only screen and (min-device-width : 320px) and (max-device-width : 480px) {
     :host {
-        --default-ui-mode: "mobile"
+        --default-ui-mode: mobile
     }
 }
 
@@ -33,6 +33,7 @@
     height: 100%;
     box-sizing: border-box;
     padding: calc(var(--thumb-radius) + 6px);
+    transition: --ui-mode 1ms step-start allow-discrete, --default-ui-mode 1ms step-start allow-discrete;
 }
 
 .container--desktop-ui {
@@ -141,7 +142,6 @@
 }
 
 .inner-radius-calc {
-  visibility: position;
   z-index: -1;
   height: 1px;
   pointer-events: none;
