@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- BREAKING CHANGE: remove quotation mark from --ui-mode
 
 ## [0.5.0] - 2023-12-21
 
