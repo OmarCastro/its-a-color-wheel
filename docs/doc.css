@@ -182,11 +182,30 @@ label:has(.checkbox--ui-mode:checked) + .resizable {
 }
 
 .example {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content:center;
-    align-items: stretch;
-    gap: 1em;
+
+    display: grid;
+    grid-template-columns: min-content 1fr;
+    grid-gap: 1rem;
+    padding: 1rem;
+    margin: auto;
+}
+
+.example__view {
+    grid-column-start: 1;
+    grid-column-end: 2;
+    grid-row-start: 1;
+    grid-row-end: 3;
+}
+
+.example__html::before {
+    content: "HTML";
+    font-weight: bold;
+}
+
+
+.example__css::before {
+    content: "CSS";
+    font-weight: bold;
 }
 
 span[contenteditable="true"] {
