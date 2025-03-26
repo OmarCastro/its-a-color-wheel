@@ -44,7 +44,7 @@
     "chokidar": "^4.0.3",
     "esbuild": "^0.25.1",
     "eslint": "^9.23.0",
-    "eslint-plugin-jsdoc": "^50.6.8",
+    "eslint-plugin-jsdoc": "^50.6.9",
     "expect": "^29.7.0",
     "glob": "^11.0.1",
     "image-size": "^2.0.1",
@@ -56,7 +56,7 @@
     "open": "^10.1.0",
     "prismjs": "^1.30.0",
     "semver": "^7.7.1",
-    "stylelint": "^16.16.0",
+    "stylelint": "^16.17.0",
     "stylelint-config-standard": "^37.0.0",
     "typescript": "^5.8.2"
   }
