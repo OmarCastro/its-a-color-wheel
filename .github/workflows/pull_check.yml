@@ -10,7 +10,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     container:
-      image: mcr.microsoft.com/playwright:v1.51.1
+      image: mcr.microsoft.com/playwright:v1.52.0
     steps:
       - name: Checkout
         uses: actions/checkout@v3
