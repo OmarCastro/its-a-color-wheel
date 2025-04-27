@@ -1,4 +1,5 @@
 import { calculateDistanceBetween2Points, CircleInfo } from './geometry.js'
+import { registerElement } from './util.js'
 import html from './color-wheel.element.html'
 import css from './color-wheel.element.css'
 
@@ -325,13 +326,7 @@ const reflectValue = element => { reflectHsl(element); setContainerProperty(elem
 
 const url = new URL(import.meta.url)
 const elementName = url.searchParams.get('named')
-if (elementName) {
-  if (customElements.get(elementName) != null) {
-    console.error(`A custom element with name "${elementName}" already exists`)
-  } else {
-    customElements.define(elementName, ColorWheelElement)
-  }
-}
+elementName && registerElement(elementName, ColorWheelElement)
 
 // fix for transition allow-discrete on chromium (https://issues.chromium.org/issues/360159391)
 // =============================================================================================
