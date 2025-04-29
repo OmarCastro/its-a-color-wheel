@@ -1,7 +1,7 @@
-
+import { type Expect } from 'expect'
 
 export interface TestAPI {
-    expect: any
+    expect: Expect
     step(description: string, step: () => Promise<any>): any
 }
 
@@ -22,7 +22,7 @@ function setTestAdapter(newadapter: Adapter){
 export function getTestAdapter(){
     return adapter
 } 
-// thee 2 lines are to prevent esbuild to bundle the await imports
+// the next 2 lines are to prevent esbuild to bundle the await imports
 const importModule = (str: string) => import(str) 
 let importStr: string;
 const fn = async () => {
