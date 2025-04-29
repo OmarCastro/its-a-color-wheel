@@ -10,3 +10,21 @@ export function registerElement (name, constructor) {
     console.error(error)
   }
 }
+
+/**
+ * Registers CSS properties to fix Chorme "allow-discrete" transition on Chrome
+ * @see https://issues.chromium.org/issues/360159391
+ */
+export function registerCSSProperties () {
+  for (const [name, inherits] of /** @type {const} */([['--default-ui-mode', false], ['--ui-mode', true]])) {
+    try {
+      CSS.registerProperty({ name, inherits })
+    } catch (e) {
+      if (e instanceof DOMException) {
+        // property registered, ignore it
+      } else {
+        throw e // re-throw the error
+      }
+    }
+  }
+}

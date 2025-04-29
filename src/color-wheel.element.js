@@ -1,5 +1,5 @@
 import { calculateDistanceBetween2Points, CircleInfo } from './geometry.js'
-import { registerElement } from './util.js'
+import { registerElement, registerCSSProperties } from './util.js'
 import html from './color-wheel.element.html'
 import css from './color-wheel.element.css'
 
@@ -327,18 +327,4 @@ const reflectValue = element => { reflectHsl(element); setContainerProperty(elem
 const url = new URL(import.meta.url)
 const elementName = url.searchParams.get('named')
 elementName && registerElement(elementName, ColorWheelElement)
-
-// fix for transition allow-discrete on chromium (https://issues.chromium.org/issues/360159391)
-// =============================================================================================
-
-for (const [name, inherits] of /** @type {const} */([['--default-ui-mode', false], ['--ui-mode', true]])) {
-  try {
-    CSS.registerProperty({ name, inherits })
-  } catch (e) {
-    if (e instanceof DOMException) {
-      // property registered, ignore it
-    } else {
-      throw e // re-throw the error
-    }
-  }
-}
+registerCSSProperties()
