@@ -1,6 +1,6 @@
 {
   "name": "its-a-color-wheel",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "It's a color wheel",
   "main": "dist/esm/color-wheel.element.js",
   "directories": {
