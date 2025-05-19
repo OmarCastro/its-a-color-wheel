@@ -617,7 +617,12 @@ async function minifyHtml (htmlText) {
   const { DOMParser } = await loadDom()
   const parsed = new DOMParser().parseFromString(htmlText, 'text/html')
   await minifyDOM(parsed.documentElement)
-  return parsed.documentElement.outerHTML
+
+  const fullpageRegexCheck = /^<(!doctype\s+)?html/i
+  if (fullpageRegexCheck.test(htmlText)) {
+    return parsed.documentElement.outerHTML
+  }
+  return parsed.body.innerHTML
 }
 
 async function minifyCss (cssText) {
