@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- incorrect fetch of default ui mode, also, it could be overriden.
+- html minification resulting the completed html document, `<html>` elements are unnecessary
+- incorrect fetch of default ui mode, also, it could be overriden
 
 
 ## [1.0.0] - 2024-05-02
