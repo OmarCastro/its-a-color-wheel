@@ -884,10 +884,12 @@ function asciiIconSvg (asciicode) {
 }
 
 async function makeBadge (params) {
-  const { default: libMakeBadge } = await import('badge-maker/lib/make-badge.js')
+  const { makeBadge: libMakeBadge } = await import('badge-maker')
+  const { logo, ...otherParams } = params
   return libMakeBadge({
     style: 'for-the-badge',
-    ...params,
+    logoBase64: logo,
+    ...otherParams,
   })
 }
 
@@ -995,7 +997,6 @@ async function makeBadgeForTestResult (path) {
     message: `${passedAmount} / ${testAmount}`,
     color: passed ? green : red,
     logo: asciiIconSvg('✔'),
-    logoWidth: 16,
   })
   const badgeWrite = writeFile(`${path}/test-results-badge.svg`, svg)
   const a11yBadgeWrite = writeFile(`${path}/test-results-badge-a11y.svg`, await applyA11yTheme(svg, { replaceIconToText: '✔' }))
