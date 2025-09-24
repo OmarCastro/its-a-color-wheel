@@ -89,18 +89,18 @@ queryAll('script.js-example').forEach(element => {
   element.replaceWith(pre)
 })
 
-queryAll('svg[ss:include]').forEach(element => {
+queryAll('svg[ss\\:include]').forEach(element => {
   const ssInclude = element.getAttribute('ss:include')
   const svgText = readFileImport(ssInclude)
   element.outerHTML = svgText
 })
 
-queryAll('[ss:markdown]:not([ss:include])').forEach(element => {
+queryAll('[ss\\:markdown]:not([ss\\:include])').forEach(element => {
   const md = dedent(element.innerHTML)
   element.innerHTML = marked(md, { mangle: false, headerIds: false })
 })
 
-queryAll('[ss:markdown][ss:include]').forEach(element => {
+queryAll('[ss\\:markdown][ss\\:include]').forEach(element => {
   const ssInclude = element.getAttribute('ss:include')
   const md = readFileImport(ssInclude)
   element.innerHTML = marked(md, { mangle: false, headerIds: false })
@@ -110,7 +110,7 @@ queryAll('code').forEach(element => {
   Prism.highlightElement(element, false)
 })
 
-queryAll('img[ss:size]').forEach(element => {
+queryAll('img[ss\\:size]').forEach(element => {
   const imageSrc = element.getAttribute('src')
   const size = imageSizeFromFile(`${docsOutputPath}/${imageSrc}`)
   element.removeAttribute('ss:size')
@@ -118,7 +118,7 @@ queryAll('img[ss:size]').forEach(element => {
   element.setAttribute('height', `${size.height}`)
 })
 
-promises.push(...queryAll('img[ss:badge-attrs]').map(async (element) => {
+promises.push(...queryAll('img[ss\\:badge-attrs]').map(async (element) => {
   const imageSrc = element.getAttribute('src')
   const svgText = await readFile(`${docsOutputPath}/${imageSrc}`, 'utf8')
   const div = document.createElement('div')
@@ -135,13 +135,13 @@ promises.push(...queryAll('img[ss:badge-attrs]').map(async (element) => {
   if (title && !badgeAttrs.includes('-title')) { element.setAttribute('title', title) }
 }))
 
-queryAll('link[href][rel="stylesheet"][ss:inline]').forEach(element => {
+queryAll('link[href][rel="stylesheet"][ss\\:inline]').forEach(element => {
   const href = element.getAttribute('href')
   const cssText = fs.readFileSync(`${docsOutputPath}/${href}`, 'utf8')
   element.outerHTML = `<style>${cssText}</style>`
 })
 
-promises.push(...queryAll('link[href][ss:repeat-glob]').map(async (element) => {
+promises.push(...queryAll('link[href][ss\\:repeat-glob]').map(async (element) => {
   const href = element.getAttribute('href')
   if (!href) { return }
   for await (const filename of getFiles(docsOutputPath)) {
@@ -194,7 +194,7 @@ const tocUtils = {
 
 await Promise.all(promises)
 
-queryAll('[ss:toc]').forEach(element => {
+queryAll('[ss\\:toc]').forEach(element => {
   const ol = document.createElement('ol')
   /** @type {[HTMLElement, HTMLElement][]} */
   const path = []
