@@ -6,19 +6,19 @@
         <meta name="keywords" content="i18n webcomponents">
         <meta charset="UTF-8">
         <script type="module" src="doc.js" async></script>
-        <link rel="modulepreload" href="chunk/!(*.lazy.)*.js" as="script" ss:repeat-glob>
-        <link rel="modulepreload" href="chunk/*.lazy.*.js" as="script" fetchpriority="low" ss:repeat-glob>
+        <link rel="modulepreload" href="chunk/!(*.lazy.)*.js" as="script" _bh-repeat-glob>
+        <link rel="modulepreload" href="chunk/*.lazy.*.js" as="script" fetchpriority="low" _bh-repeat-glob>
         <meta name="viewport" content="width=device-width">
-        <link rel="stylesheet" href="doc.css" ss:inline>
+        <link rel="stylesheet" href="doc.css" _bh-inline>
     </head>
     <body>
         <div class="sidebar">
             <div class="toc">
                 <p><strong><a href=".">Documentation</a></strong></p>
                 <strong>How to contribute</strong>
-                <template ss:toc></template>
+                <template _bh-toc></template>
             </div>
         </div>
-        <div class="content" ss:markdown ss:include="../CONTRIBUTING.md"></div>
+        <div class="content" _bh-markdown _bh-include="../CONTRIBUTING.md"></div>
     </body>
 </html>
