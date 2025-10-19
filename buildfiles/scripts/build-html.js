@@ -1,7 +1,9 @@
 /* eslint-disable jsdoc/require-jsdoc, jsdoc/require-param-description */
 
 /**
- * Builds html by parsing _bh-* attributes as well as putting syntax highlight in code
+ * @file
+ *
+ * Builds html by preprocessing p-* attributes as well as putting syntax highlight in <code> elements
  */
 
 import Prism from 'prismjs'
@@ -94,22 +96,22 @@ queryAll('script.js-example').forEach(element => {
   element.replaceWith(pre)
 })
 
-queryAll('svg[_bh-include]').forEach(element => {
-  const bhInclude = element.getAttribute('_bh-include')
+queryAll('svg[p-include]').forEach(element => {
+  const bhInclude = element.getAttribute('p-include')
   const svgText = readFileImport(bhInclude)
   element.outerHTML = svgText
 })
 
-queryAll('[_bh-markdown]:not([_bh-include])').forEach(element => {
+queryAll('[p-markdown]:not([p-include])').forEach(element => {
   const md = dedent(element.innerHTML)
-  element.removeAttribute('_bh-markdown')
+  element.removeAttribute('p-markdown')
   element.innerHTML = marked(md, { mangle: false, headerIds: false })
 })
 
-queryAll('[_bh-markdown][_bh-include]').forEach(element => {
-  const bhInclude = element.getAttribute('_bh-include')
-  element.removeAttribute('_bh-markdown')
-  element.removeAttribute('_bh-include')
+queryAll('[p-markdown][p-include]').forEach(element => {
+  const bhInclude = element.getAttribute('p-include')
+  element.removeAttribute('p-markdown')
+  element.removeAttribute('p-include')
   const md = readFileImport(bhInclude)
   element.innerHTML = marked(md, { mangle: false, headerIds: false })
 })
@@ -118,28 +120,28 @@ queryAll('code').forEach(element => {
   Prism.highlightElement(element, false)
 })
 
-queryAll('[_bh-aria-label]').forEach(element => {
+queryAll('[p-aria-label]').forEach(element => {
   if (element.hasAttribute('title') && !element.hasAttribute('aria-label')) {
-    element.removeAttribute('_bh-aria-label')
+    element.removeAttribute('p-aria-label')
     element.setAttribute('aria-label', element.getAttribute('title'))
   }
 })
 
-queryAll('img[_bh-size]').forEach(element => {
+queryAll('img[p-size]').forEach(element => {
   const imageSrc = element.getAttribute('src')
   const size = imageSizeFromFile(`${docsOutputPath}/${imageSrc}`)
-  element.removeAttribute('_bh-size')
+  element.removeAttribute('p-size')
   element.setAttribute('width', `${size.width}`)
   element.setAttribute('height', `${size.height}`)
 })
 
-promises.push(...queryAll('img[_bh-badge-attrs]').map(async (element) => {
+promises.push(...queryAll('img[p-badge-attrs]').map(async (element) => {
   const imageSrc = element.getAttribute('src')
   const svgText = await readFile(`${docsOutputPath}/${imageSrc}`, 'utf8')
   const div = document.createElement('div')
   div.innerHTML = svgText
-  const badgeAttrs = element.getAttribute('_bh-badge-attrs').split(/[, ]+/)
-  element.removeAttribute('_bh-badge-attrs')
+  const badgeAttrs = element.getAttribute('p-badge-attrs').split(/[, ]+/)
+  element.removeAttribute('p-badge-attrs')
   const svg = div.querySelector('svg')
   if (!svg) { throw Error(`${docsOutputPath}/${imageSrc} is not a valid svg`) }
 
@@ -150,13 +152,13 @@ promises.push(...queryAll('img[_bh-badge-attrs]').map(async (element) => {
   if (title && !badgeAttrs.includes('-title')) { element.setAttribute('title', title) }
 }))
 
-queryAll('link[href][rel="stylesheet"][_bh-inline]').forEach(element => {
+queryAll('link[href][rel="stylesheet"][p-inline]').forEach(element => {
   const href = element.getAttribute('href')
   const cssText = fs.readFileSync(`${docsOutputPath}/${href}`, 'utf8')
   element.outerHTML = `<style>${cssText}</style>`
 })
 
-promises.push(...queryAll('link[href][_bh-repeat-glob]').map(async (element) => {
+promises.push(...queryAll('link[href][p-repeat-glob]').map(async (element) => {
   const href = element.getAttribute('href')
   if (!href) { return }
   for await (const filename of getFiles(docsOutputPath)) {
@@ -166,7 +168,7 @@ promises.push(...queryAll('link[href][_bh-repeat-glob]').map(async (element) => 
     for (const { name, value } of element.attributes) {
       link.setAttribute(name, value)
     }
-    link.removeAttribute('_bh-repeat-glob')
+    link.removeAttribute('p-repeat-glob')
     link.setAttribute('href', filename)
     element.insertAdjacentElement('afterend', link)
   }
@@ -208,7 +210,7 @@ const tocUtils = {
 }
 
 await Promise.all(promises)
-queryAll('[_bh-toc]').forEach(element => {
+queryAll('[p-toc]').forEach(element => {
   const ol = document.createElement('ol')
   /** @type {[HTMLElement, HTMLElement][]} */
   const path = []
@@ -228,7 +230,7 @@ const attributesWithPrefixOnOutput = (() => {
   queryAll('*').forEach(element => {
     const toRemove = new Set()
     for (const { name } of element.attributes) {
-      if (name.startsWith('_bh-')) {
+      if (name.startsWith('p-')) {
         attributeNameSets[name] ??= 0
         attributeNameSets[name]++
         toRemove.add(name)
@@ -241,7 +243,7 @@ const attributesWithPrefixOnOutput = (() => {
 
 for (const [name, times] of Object.entries(attributesWithPrefixOnOutput)) {
   const timesText = times === 1 ? '1 time' : times + ' times'
-  console.log(`warning: element with attribute "${name}" exists ${timesText}, removing...`)
+  console.log(`warning: element with preprocess attribute "${name}" exists ${timesText}, removing attribute...`)
 }
 
 const minifiedHtml = '<!doctype html>' + minifyDOM(document.documentElement).outerHTML
