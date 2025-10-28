@@ -12,7 +12,7 @@ export function registerElement (name, constructor) {
 }
 
 /**
- * Registers CSS properties to fix Chorme "allow-discrete" transition on Chrome
+ * Registers CSS properties to fix Chrome "allow-discrete" transition on Chrome
  * @see https://issues.chromium.org/issues/360159391
  */
 export function registerCSSProperties () {

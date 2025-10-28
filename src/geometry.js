@@ -41,7 +41,7 @@ export const CircleInfo = {
 
 /**
  * @typedef {object} Rect
- * An object that represents rectange
+ * An object that represents rectangle
  * @property {number} x - The `x` coordinate of the `Rect`'s origin point (typically the top-left corner of the rectangle).
  * @property {number} y - The `y` coordinate of the `Rect`'s origin point (typically the top-left corner of the rectangle).
  * @property {number} width - The width of the `Rect`.

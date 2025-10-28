@@ -66,13 +66,13 @@ test('slider should follow mouse position when dragging the mouse in desktop mod
     y: colorWheelBoundingBox.y + colorWheelBoundingBox.height / 2
   }
 
-  const getSturation = async () => await colorWheelElement.evaluate(node => parseInt(node.getAttribute('saturation')))
+  const getSaturation = async () => await colorWheelElement.evaluate(node => parseInt(node.getAttribute('saturation')))
   const getHue = async () => await colorWheelElement.evaluate(node => parseInt(node.getAttribute('hue')))
 
   await page.mouse.move(centerPoint.x, centerPoint.y)
   await page.mouse.down()
   await page.mouse.move(centerPoint.x, colorWheelBoundingBox.y)
-  expect.soft(await getSturation()).toEqual(100)
+  expect.soft(await getSaturation()).toEqual(100)
   expect.soft(await getHue()).toBeCloseTo(0)
   await page.mouse.move(colorWheelBoundingBox.x, colorWheelBoundingBox.y)
   expect.soft(await getHue()).toBeCloseTo(45, -1)

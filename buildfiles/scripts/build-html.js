@@ -341,7 +341,7 @@ function minifyDOM (domElement) {
       return { ...minificationState, whitespaceMinify: 'remove-blank' }
     }
     // in the <body>, the default whitespace behaviour is to merge multiple whitespaces to 1,
-    // there will stil have some whitespace that will be merged, but at this point, there is
+    // there will still have some whitespace that will be merged, but at this point, there is
     // little benefit to remove even more duplicated whitespace
     if (['body'].includes(tag)) {
       return { ...minificationState, whitespaceMinify: '1-space' }

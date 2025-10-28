@@ -261,8 +261,8 @@ class ColorWheelElement extends HTMLElement {
 function calculateSaturation (disk, point) {
   const { center, radius, innerRadiusPerc } = disk
   const r = calculateDistanceBetween2Points(center, point)
-  const rperc = Math.min(100, Math.max(0, r * 100 / radius))
-  const saturation = (rperc - innerRadiusPerc) * 100 / (100 - innerRadiusPerc)
+  const rPerc = Math.min(100, Math.max(0, r * 100 / radius))
+  const saturation = (rPerc - innerRadiusPerc) * 100 / (100 - innerRadiusPerc)
   return Math.round(Math.min(100, Math.max(0, saturation)))
 }
 
@@ -288,7 +288,7 @@ const getContainer = element => queryRequired(element.shadowRoot, '.container')
 /**
  * @param {ColorWheelElement} element - target element
  * @param {string} property - css
- * @param {string | number} value - new valuw
+ * @param {string | number} value - new value
  */
 const setContainerProperty = (element, property, value) => { getContainer(element).style.setProperty(property, String(value)) }
 
