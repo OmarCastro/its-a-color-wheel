@@ -796,7 +796,9 @@ async function listNonIgnoredFiles ({ ignorePath = '.gitignore', patterns } = {}
 
 async function getIgnorePatternsFromFile (filePath) {
   const content = await fs.readFile(filePath, 'utf8')
-  const lines = content.split('\n').filter(line => !line.startsWith('#') && line.trim() !== '')
+  const lines = content.split('\n')
+    .filter(line => !line.startsWith('#') && line.trim() !== '')
+    .map(gitignoreToGlob)
   return [...new Set(lines)]
 }
 
@@ -818,6 +820,54 @@ async function listChangedFiles () {
 function isRunningFromNPMScript () {
   return JSON.parse(readFileSync(pathFromProject('./package.json'))).name === process.env.npm_package_name
 }
+
+function gitignoreToGlob (pattern) {
+  // Special case: Empty string
+  if (!pattern) { return pattern }
+
+  // strip off negation to make life easier
+  const negated = pattern.startsWith('!')
+  const patternToTest = negated ? pattern.slice(1) : pattern
+  let result = patternToTest
+  let leadingSlash = false
+
+  // strip off leading slash
+  if (patternToTest[0] === '/') {
+    leadingSlash = true
+    result = patternToTest.slice(1)
+  }
+
+  // For the most part, the first character determines what to do
+  switch (result[0]) {
+    case '*':
+      if (patternToTest[1] !== '*') {
+        result = '**/' + result
+      }
+      break
+
+    default:
+      if ((!leadingSlash && !result.includes('/')) || result.endsWith('/')) {
+        result = '**/' + result
+      }
+
+      // no further changes if the pattern ends with a wildcard
+      if (result.endsWith('*') || result.endsWith('?')) {
+        break
+      }
+
+      // differentiate between filenames and directory names
+      if (!/\.[a-z\d_-]+$/.test(result)) {
+        if (!result.endsWith('/')) {
+          result += '/'
+        }
+
+        result += '**'
+      }
+  }
+
+  return negated ? '!' + result : result
+}
+
 
 // @section 10 npm utilities
 
