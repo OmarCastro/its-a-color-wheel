@@ -36,7 +36,7 @@
   },
   "homepage": "https://github.com/OmarCastro/its-a-color-wheel#readme",
   "devDependencies": {
-    "@cspell/eslint-plugin": "^9.2.2",
+    "@cspell/eslint-plugin": "^9.3.0",
     "@dagrejs/dagre": "^1.1.8",
     "@playwright/test": "^1.56.1",
     "anafanafo": "^2.0.0",
@@ -50,7 +50,7 @@
     "glob": "^11.0.3",
     "image-size": "^2.0.2",
     "jsdom": "^27.1.0",
-    "marked": "^16.4.1",
+    "marked": "^17.0.0",
     "minimatch": "^10.1.1",
     "mkcert": "^3.2.0",
     "neostandard": "^0.12.2",
