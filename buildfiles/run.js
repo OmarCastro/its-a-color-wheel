@@ -1,5 +1,5 @@
 #!/usr/bin/env -S node --input-type=module
-/* eslint-disable camelcase, jsdoc/require-jsdoc, jsdoc/require-param-description */
+/* eslint-disable jsdoc/require-param-description */
 /*
 This file is purposely large to easily move the code to multiple projects, its build code, not production.
 To help navigate this file is divided by sections:
@@ -807,7 +807,7 @@ async function * getFiles (dir) {
 
 async function getFilesAsArray (dir) {
   const arr = []
-  for await (const i of getFiles(dir)) arr.push(i)
+  for await (const i of getFiles(dir)) {arr.push(i)}
   return arr
 }
 
@@ -961,10 +961,10 @@ async function getLatestReleasedVersion () {
       }
       return { version: match[1], releaseDate: match[2] }
     }).filter(version => !!version)
-  const releasedVersions = versions.filter(version => {
+  const releasedVersion = versions.find(version => {
     return version.releaseDate.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}/)
   })
-  return releasedVersions[0]
+  return releasedVersion
 }
 
 // @section 12 badge utilities
