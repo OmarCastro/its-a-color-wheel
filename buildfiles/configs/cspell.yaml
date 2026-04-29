@@ -1,0 +1,40 @@
+
+language: en
+ignorePaths: 
+  - "**/*.spec.js"
+  - "**/dev-tools/**"
+  - "**/smoke-test/**"
+  - "**/docs/assets/**"
+  - "**/docs/doc.js"
+  - "**/docs/*.css"
+  - "**/package.json"
+  - "**/.gitignore"
+words:
+  - hrefs # hiperlinks
+  - linc # lint changed files only
+  - CIELAB # The CIELAB color space, also referred to as L*a*b*, is a color space defined by the International Commission on Illumination (abbreviated CIE) in 1976
+  - CIEDE # CIELAB ΔE. The International Commission on Illumination (CIE) calls their distance metric ΔE
+  - NTSC
+  - rgbcolor # Red, Green, Blue (RGB) color
+  - threshold
+
+  # names
+  - Kotsarenko
+  - Vysniauskas
+  - Tristimulus
+  - Sylvania
+  - Ultralume
+  - Gaurav
+  - Sharma
+  - Wencheng
+  - Edul
+  - Dalal
+
+dictionaries:
+  - "softwareTerms"
+  - "misc"
+  - "en-gb"
+  - "css"
+  - "html"
+  - "js"
+  - "lorem-ipsum"

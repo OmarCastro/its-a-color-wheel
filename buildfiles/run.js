@@ -20,7 +20,7 @@ To help navigate this file is divided by sections:
 */
 import process from 'node:process'
 import fs, { readFile as fsReadFile, writeFile } from 'node:fs/promises'
-import { resolve, basename, dirname, relative } from 'node:path'
+import { resolve, basename, dirname, relative, join } from 'node:path'
 import { existsSync, readFileSync } from 'node:fs'
 import { promisify } from 'node:util'
 import { execFile as baseExecFile, exec as baseExec, spawn } from 'node:child_process'
@@ -32,6 +32,8 @@ const readFile = (path) => fsReadFile(path, { encoding: 'utf8' })
 
 const projectPathURL = new URL('../', import.meta.url)
 const pathFromProject = (path) => new URL(path, projectPathURL).pathname
+const devToolsRelativePath = relative(projectPathURL.pathname, new URL('.', import.meta.url).pathname)
+const pathFromDevTools = (path) => join(devToolsRelativePath, path)
 process.chdir(pathFromProject('.'))
 let updateDevServer = () => {}
 
@@ -351,6 +353,8 @@ async function execBuild () {
 async function execlintCodeOnChanged () {
   logStartStage('linc', 'lint using eslint')
   const returnCodeLint = await lintCode({ onlyChanged: true }, { fix: true })
+  logStage('spell check')
+  const returnCheckSpelling = await checkSpelling({ onlyChanged: true })
   logStage('lint using stylelint')
   const returnStyleLint = await lintStyles({ onlyChanged: true })
   logStage('validating json')
@@ -366,12 +370,14 @@ async function execlintCodeOnChanged () {
     process.stdout.write('no files to check...')
   }
   logEndStage()
-  return returnCodeLint + returnCodeTs + returnStyleLint + returnJsonLint + returnYamlLint
+  return returnCodeLint + returnCheckSpelling + returnCodeTs + returnStyleLint + returnJsonLint + returnYamlLint
 }
 
 async function execlintCode () {
   logStartStage('lint', 'lint using eslint')
   const returnCodeLint = await lintCode({ onlyChanged: false }, { fix: true })
+  logStage('spell check')
+  const returnCheckSpelling = await checkSpelling({ onlyChanged: false })
   logStage('lint using stylelint')
   const returnStyleLint = await lintStyles({ onlyChanged: false })
   logStage('validating json')
@@ -381,7 +387,7 @@ async function execlintCode () {
   logStage('typecheck with typescript')
   const returnCodeTs = await cmdSpawn('npx tsc --noEmit -p jsconfig.json')
   logEndStage()
-  return returnCodeLint + returnCodeTs + returnStyleLint + returnJsonLint + returnYamlLint
+  return returnCodeLint + returnCheckSpelling + returnCodeTs + returnStyleLint + returnJsonLint + returnYamlLint
 }
 
 async function execGithubBuildWorkflow () {
@@ -438,7 +444,7 @@ function helpText () {
   const usageLine = fromNPM ? 'npm run <task>' : 'run <task>'
   return `Usage: ${usageLine}
 
-Tasks: 
+Tasks:
   ${tasksToShow.map(([key, value]) => `${key.padEnd(maxTaskLength, ' ')}  ${value.description}`).join('\n  ')}
   ${'help, --help, -h'.padEnd(maxTaskLength, ' ')}  ${helpTask.description}`
 }
@@ -538,6 +544,46 @@ async function lintCode ({ onlyChanged }, options) {
     console.log('')
     console.log(resultLog)
   } else {
+    process.stdout.write('OK...')
+  }
+  return errorCount ? 1 : 0
+}
+
+async function checkSpelling ({ onlyChanged, changedFiles }) {
+  const { load } = await import('js-yaml')
+
+  const configPath = pathFromDevTools('configs/cspell.yaml')
+  const config = load(await readFile(configPath))
+  const ignorePaths = config.ignorePaths ?? []
+  const fileList = await listFileByLinterParams({ patterns: ['*'], ignorePatterns: ignorePaths, onlyChanged, changedFiles })
+
+  if (fileList.length <= 0) {
+    process.stdout.write('no files to spell check. ')
+    return 0
+  }
+
+  const { lint, getDefaultReporter } = await import('cspell')
+  const options = {
+    cache: false,
+    color: false,
+    showPerfSummary: true,
+    issues: true,
+  }
+
+  const reporter = getDefaultReporter(options)
+
+  const results = await lint(fileList, {
+    config: pathFromDevTools('configs/cspell.yaml'),
+    cache: true,
+    cacheLocation: '.tmp/cspellcache',
+  }, reporter)
+
+  const filesLinted = results.files
+  process.stdout.write(`checked ${filesLinted} files. `)
+
+  const errorCount = results.errors
+
+  if (errorCount <= 0) {
     process.stdout.write('OK...')
   }
   return errorCount ? 1 : 0
@@ -777,7 +823,6 @@ async function * watchDirs (...dirs) {
 
 async function listNonIgnoredFiles ({ ignorePath = '.gitignore', patterns } = {}) {
   const { minimatch } = await import('minimatch')
-  const { join } = await import('node:path')
   const { statSync, readdirSync } = await import('node:fs')
   const ignorePatterns = await getIgnorePatternsFromFile(ignorePath)
   const ignoreMatchers = ignorePatterns.map(pattern => minimatch.filter(pattern, { matchBase: true }))
@@ -802,11 +847,28 @@ async function getIgnorePatternsFromFile (filePath) {
   return [...new Set(lines)]
 }
 
-async function listChangedFilesMatching (...patterns) {
+async function listChangedFilesMatching (patterns, ignorePatterns) {
+  return filterFilePathsByPatterns(await listChangedFiles(), patterns, ignorePatterns)
+}
+
+async function listFileByLinterParams ({ patterns, onlyChanged, changedFiles, ignorePatterns }) {
+  if (onlyChanged && changedFiles) { return await filterFilePathsByPatterns(changedFiles, patterns, ignorePatterns) }
+  if (onlyChanged) { return await listChangedFilesMatching(patterns, ignorePatterns) }
+  return await listNonIgnoredFiles({ patterns, ignorePatterns })
+}
+
+async function filterFilePathsByPatterns (filePaths, patterns = [], ignorePatterns = []) {
+  const paths = Array.isArray(filePaths) ? filePaths : Array.from(filePaths)
+  const hasPatterns = patterns.length > 0
+  const hasIgnorePatterns = ignorePatterns.length > 0
+  if (!hasPatterns && !hasIgnorePatterns) { return paths }
   const { minimatch } = await import('minimatch')
-  const changedFiles = [...(await listChangedFiles())]
-  const intersection = patterns.flatMap(pattern => minimatch.match(changedFiles, pattern, { matchBase: true }))
-  return [...new Set(intersection)]
+  const matchers = patterns.map(pattern => minimatch.filter(pattern, { matchBase: true, dot: true }))
+  const matchedPaths = hasPatterns ? paths.filter(path => matchers.some(match => match(path))) : paths
+  if (!hasIgnorePatterns) { return matchedPaths }
+  const ignoreMatchers = ignorePatterns.map(pattern => minimatch.filter(pattern, { matchBase: true, dot: true }))
+  const filteredPaths = matchedPaths.filter(path => ignoreMatchers.every(match => !match(path)))
+  return filteredPaths
 }
 
 async function listChangedFiles () {
@@ -867,7 +929,6 @@ function gitignoreToGlob (pattern) {
 
   return negated ? '!' + result : result
 }
-
 
 // @section 10 npm utilities
 
@@ -1190,15 +1251,15 @@ async function createModuleGraphSvg (moduleGrapnJson) {
   <style>
     text { fill: #222; }
     rect { fill: #ddd; stroke: #222 }
-    polyline {stroke: #ddd; stroke-linejoin: round} 
-    polyline.outer {stroke: #222;} 
-    #arrowhead path {stroke: #222; fill: #ddd; stroke-linejoin: round} 
+    polyline {stroke: #ddd; stroke-linejoin: round}
+    polyline.outer {stroke: #222;}
+    #arrowhead path {stroke: #222; fill: #ddd; stroke-linejoin: round}
     @media (prefers-color-scheme: dark) {
       text { fill: #eee; }
       rect { fill: #444; stroke:#eee }
-      polyline {stroke: #222; } 
-      polyline.outer {stroke: #eee;}   
-      #arrowhead path {stroke: #eee; fill: #222; } 
+      polyline {stroke: #222; }
+      polyline.outer {stroke: #eee;}
+      #arrowhead path {stroke: #eee; fill: #222; }
     }</style>
   <title>Module graph</title>${defs}
   <g shape-rendering="geometricPrecision" fill="none" >${inputsLinesSvg}</g>
