@@ -27,6 +27,15 @@ import { execFile as baseExecFile, exec as baseExec, spawn } from 'node:child_pr
 const exec = promisify(baseExec)
 const execFile = promisify(baseExecFile)
 const readFile = (path) => fsReadFile(path, { encoding: 'utf8' })
+const exit = (exitCode) => {
+  if (typeof exitCode === 'number') {
+    process.exitCode = exitCode
+  }
+  setTimeout(() => {
+    console.error('Force exit after timeout')
+    process.exit()
+  }, 10_000).unref()
+}
 
 // @section 1 init
 
@@ -41,25 +50,37 @@ let updateDevServer = () => {}
 
 const helpTask = {
   description: 'show this help',
-  cb: async () => { console.log(helpText()); process.exit(0) },
+  cb: async () => { console.log(helpText()); exit(0) },
 }
 
 const tasks = {
   build: {
     description: 'builds the project',
-    cb: async () => { await execBuild(); process.exit(0) },
+    cb: () => execBuild().then(exit),
   },
   'build:github-action': {
     description: 'runs build for github action',
-    cb: async () => { await execGithubBuildWorkflow(); process.exit(0) },
+    cb: () => execGithubBuildWorkflow().then(exit),
   },
   test: {
     description: 'builds the project',
-    cb: async () => { await execTests(); process.exit(0) },
+    cb: () => execTests().then(exit),
   },
   lint: {
     description: 'validates the code',
-    cb: async () => { await execlintCode(); process.exit(0) },
+    cb: () => execlintCode().then(exit),
+  },
+  'linc': {
+    description: 'validates only changed files',
+    cb: () => execlintCodeOnChanged().then(exit),
+  },
+  'format': {
+    description: 'format the project code',
+    cb: () => execFormatCode().then(exit),
+  },
+  'formac': {
+    description: 'formats only changed files code',
+    cb: () => execFormatCodeOnChanged().then(exit),
   },
   dev: {
     description: 'setup dev environment',
@@ -390,6 +411,20 @@ async function execlintCode () {
   return returnCodeLint + returnCheckSpelling + returnCodeTs + returnStyleLint + returnJsonLint + returnYamlLint
 }
 
+async function execFormatCode () {
+  logStartStage('format', 'formatting code')
+  const returnCodeLint = await formatCode({ onlyChanged: false })
+  logEndStage()
+  return returnCodeLint
+}
+
+async function execFormatCodeOnChanged () {
+  logStartStage('formac', 'formatting changed code')
+  const returnCodeLint = await formatCode({ onlyChanged: true })
+  logEndStage()
+  return returnCodeLint
+}
+
 async function execGithubBuildWorkflow () {
   logStartStage('build:github')
   await buildTest()
@@ -517,16 +552,21 @@ function wait (ms) {
 
 // @section 6 linters
 
-async function lintCode ({ onlyChanged }, options) {
-  const esLintFilePatterns = ['**/*.js']
-
-  const finalFilePatterns = onlyChanged ? await listChangedFilesMatching(...esLintFilePatterns) : esLintFilePatterns
+async function lintCode ({ onlyChanged, changedFiles }, options = {}) {
+  const finalFilePatterns = await listFileByLinterParams({ patterns: ['**/*.js'], onlyChanged, changedFiles })
   if (finalFilePatterns.length <= 0) {
     process.stdout.write('no files to lint. ')
     return 0
   }
+  const config = (await import('./configs/eslint.config.js')).default
+
   const { ESLint } = await import('eslint')
-  const eslint = new ESLint(options)
+  const eslint = new ESLint({
+    baseConfig: config,
+    cache: true,
+    cacheLocation: pathFromProject('.tmp/eslintcache'),
+    ...options,
+  })
   const formatter = await eslint.loadFormatter()
   const results = await eslint.lintFiles(finalFilePatterns)
 
@@ -589,19 +629,21 @@ async function checkSpelling ({ onlyChanged, changedFiles }) {
   return errorCount ? 1 : 0
 }
 
-async function lintStyles ({ onlyChanged }) {
-  const styleLintFilePatterns = ['**/*.css']
-  const finalFilePatterns = onlyChanged ? await listChangedFilesMatching(...styleLintFilePatterns) : styleLintFilePatterns
-  if (finalFilePatterns.length <= 0) {
+async function lintStyles ({ onlyChanged, changedFiles }) {
+  const fileList = await listFileByLinterParams({ patterns: ['**/*.css'], onlyChanged, changedFiles })
+  if (fileList.length <= 0) {
     process.stdout.write('no stylesheets to lint. ')
     return 0
   }
   const { default: stylelint } = await import('stylelint')
-  const result = await stylelint.lint({ files: finalFilePatterns })
+  const result = await stylelint.lint({
+    files: fileList,
+    configFile: pathFromDevTools('configs/.stylelintrc.yaml'),
+    ignorePath: '.gitignore',
+  })
   const filesLinted = result.results.length
   process.stdout.write(`linted ${filesLinted} files. `)
-
-  const stringFormatter = await stylelint.formatters.compact
+  const stringFormatter = await stylelint.formatters.tap
 
   const output = stringFormatter(result.results)
   if (output) {
@@ -613,25 +655,61 @@ async function lintStyles ({ onlyChanged }) {
   return result.errored ? 1 : 0
 }
 
-async function validateJson ({ onlyChanged }) {
+async function validateJson ({ onlyChanged, changedFiles }) {
   return await validateFiles({
     patterns: ['*.json'],
     onlyChanged,
-    validation: async (file) => JSON.parse(await fs.readFile(file, 'utf8')),
+    changedFiles,
+    validation: async (file) => JSON.parse(await readFile(file)),
   })
 }
 
-async function validateYaml ({ onlyChanged }) {
+async function validateYaml ({ onlyChanged, changedFiles }) {
   const { load } = await import('js-yaml')
   return await validateFiles({
     patterns: ['*.yml', '*.yaml'],
     onlyChanged,
-    validation: async (file) => load(await fs.readFile(file, 'utf8')),
+    changedFiles,
+    validation: async (file) => load(await readFile(file)),
   })
 }
 
-async function validateFiles ({ patterns, onlyChanged, validation }) {
-  const fileList = onlyChanged ? await listChangedFilesMatching(...patterns) : await listNonIgnoredFiles({ patterns })
+async function formatCode ({ onlyChanged, changedFiles }) {
+  const finalFilePatterns = await listFileByLinterParams({ patterns: ['**/*.js'], onlyChanged, changedFiles })
+  if (finalFilePatterns.length <= 0) {
+    process.stdout.write('no files to lint. ')
+    return 0
+  }
+
+  const config = (await import('./configs/eslint.stylistic.config.js')).default
+
+  const { ESLint } = await import('eslint')
+  const eslint = new ESLint({
+    baseConfig: config,
+    fix: true,
+  })
+
+  const formatter = await eslint.loadFormatter()
+  const results = await eslint.lintFiles(finalFilePatterns)
+  await ESLint.outputFixes(results)
+
+  const filesLinted = results.length
+  process.stdout.write(`formatted ${filesLinted} files. `)
+
+  const errorCount = results.reduce((acc, result) => acc + result.errorCount, 0)
+
+  const resultLog = formatter.format(results)
+  if (resultLog) {
+    console.log('')
+    console.log(resultLog)
+  } else {
+    process.stdout.write('OK...')
+  }
+  return errorCount ? 1 : 0
+}
+
+async function validateFiles ({ patterns, onlyChanged, changedFiles, validation }) {
+  const fileList = await listFileByLinterParams({ patterns, onlyChanged, changedFiles })
   if (fileList.length <= 0) {
     process.stdout.write('no files to lint. ')
     return 0
@@ -656,6 +734,7 @@ async function validateFiles ({ patterns, onlyChanged, validation }) {
 
   return errorCount ? 1 : 0
 }
+
 
 // @section 7 minifiers
 
