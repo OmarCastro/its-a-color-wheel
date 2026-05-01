@@ -133,8 +133,7 @@ function customPlugin () {
                     fix (fixer) {
                       const id = node.params[0]
                       const begin = first.range[0]
-                      const end = context
-                        .getSourceCode()
+                      const end = sourceCode
                         .getTokenAfter(id).range[1]
 
                       return fixer.replaceTextRange([begin, end], id.name)
