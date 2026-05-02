@@ -475,7 +475,7 @@ function helpText () {
 
   const helpArgs = fromNPM ? 'help' : 'help, --help, -h'
   const maxTaskLength = Math.max(...[helpArgs, ...Object.keys(tasks)].map(text => text.length))
-  const tasksToShow = Object.entries(tasks).filter(([_, value]) => value !== helpTask)
+  const tasksToShow = Object.entries(tasks).filter(([, value]) => value !== helpTask)
   const usageLine = fromNPM ? 'npm run <task>' : 'run <task>'
   return `Usage: ${usageLine}
 
@@ -1304,7 +1304,7 @@ async function createModuleGraphSvg (moduleGrapnJson) {
   let maxWidth = 0
   let maxHeight = 0
 
-  const inputsSvg = Object.entries(inputs).map(([file, info], index) => {
+  const inputsSvg = Object.entries(inputs).map(([file]) => {
     const { height, width } = inputsNodeMetrics[file]
     const { x, y } = graph.node(file)
     maxWidth = Math.max(maxWidth, x + width)

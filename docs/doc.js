@@ -1,13 +1,13 @@
 document.addEventListener('DOMContentLoaded', function () {
-  document.querySelectorAll('pre code').forEach((el) => {
+  document.querySelectorAll('pre code').forEach(el => {
     const html = el.innerHTML
     const lines = html.split('\n')
     const minSpaces = lines.filter(line => line.trim() !== '').reduce((acc, line) => Math.min(line.search(/\S|$/), acc), Infinity)
-    el.innerHTML = lines.map(line => line.substring(minSpaces)).join('\n').trim()
+    el.innerHTML = lines.map(line => line.slice(Math.max(0, minSpaces))).join('\n').trim()
   })
 })
 
-const getExampleColorWheel = childNode => childNode.closest('.example')?.querySelectorAll('color-wheel') ?? []
+const getExampleColorWheel = (childNode) => childNode.closest('.example')?.querySelectorAll('color-wheel') ?? []
 
 /**
  * @param {Event} event - received event
@@ -17,7 +17,7 @@ const reactElementNameChange = (event) => {
   const componentName = (event.target).closest('.component-name-edit')
   if (componentName == null) { return false }
   const newText = componentName.textContent
-  document.body.querySelectorAll('.component-name-edit').forEach(ref => { if (componentName !== ref) ref.textContent = newText })
+  document.body.querySelectorAll('.component-name-edit').forEach(ref => { if (componentName !== ref) { ref.textContent = newText } })
   document.body.querySelectorAll('.component-name-ref').forEach(ref => { ref.textContent = newText })
   return true
 }

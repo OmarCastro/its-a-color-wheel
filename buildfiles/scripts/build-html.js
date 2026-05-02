@@ -1,4 +1,4 @@
-/* eslint-disable jsdoc/require-jsdoc, jsdoc/require-param-description */
+/* eslint-disable jsdoc/require-param-description */
 
 /**
  * @file
@@ -39,7 +39,7 @@ const projectPath = new URL('../../', import.meta.url)
 const docsPath = new URL('docs', projectPath).pathname
 const docsOutputPath = new URL('build/docs', projectPath).pathname
 
-const fs = await import('fs')
+const fs = await import('node:fs')
 
 const data = fs.readFileSync(`${docsPath}/${process.argv[2]}`, 'utf8')
 
@@ -170,7 +170,7 @@ promises.push(...queryAll('link[href][p-repeat-glob]').map(async (element) => {
     }
     link.removeAttribute('p-repeat-glob')
     link.setAttribute('href', filename)
-    element.insertAdjacentElement('afterend', link)
+    element.after(link)
   }
   element.remove()
 }))
@@ -253,7 +253,7 @@ fs.writeFileSync(`${docsOutputPath}/${process.argv[2]}`, minifiedHtml)
 function dedent (templateStrings, ...values) {
   const matches = []
   const strings = typeof templateStrings === 'string' ? [templateStrings] : templateStrings.slice()
-  strings[strings.length - 1] = strings[strings.length - 1].replace(/\r?\n([\t ]*)$/, '')
+  strings[strings.length - 1] = strings.at(-1).replace(/\r?\n([\t ]*)$/, '')
   for (const string of strings) {
     const match = string.match(/\n[\t ]+/g)
     match && matches.push(...match)
