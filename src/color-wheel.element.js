@@ -136,8 +136,7 @@ class ColorWheelElement extends HTMLElement {
 
       const initDeg = getAngle(pointerEvent)
       const uiMode = this.uiMode
-
-      if ((uiMode || '').trim() === 'mobile') {
+      if (uiMode === 'mobile') {
         /** @param {PointerEvent} e - pointermove event */
         const rotateWheel = (e) => {
           const deg = getAngle(e)
