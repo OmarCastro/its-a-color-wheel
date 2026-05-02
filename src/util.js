@@ -28,3 +28,16 @@ export function registerCSSProperties () {
     }
   }
 }
+
+/**
+ * Gets host element of node inside shadow dom; returns undefined otherwise
+ * @param {EventTarget | null} [node] - property transition event
+ */
+export function getHostElement (node) {
+  if (!(node instanceof Node)) { return undefined }
+  const rootNode = node.getRootNode()
+  if (!(rootNode instanceof ShadowRoot)) { return undefined }
+  const { host } = rootNode
+  if (!(host instanceof Element)) { return undefined }
+  return host
+}

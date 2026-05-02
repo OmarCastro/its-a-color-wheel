@@ -1,5 +1,5 @@
 import { calculateDistanceBetween2Points, CircleInfo } from './geometry.js'
-import { registerElement, registerCSSProperties } from './util.js'
+import { registerElement, registerCSSProperties, getHostElement } from './util.js'
 import html from './color-wheel.element.html'
 import css from './color-wheel.element.css'
 
@@ -22,13 +22,9 @@ let loadStyles = () => {
  * @param {TransitionEvent} event - property transition event
  */
 function uiModeTransitionEventHandler (event) {
-  const { target } = event
-  if (!(target instanceof HTMLElement)) return
-  const rootNode = target.getRootNode()
-  if (!(rootNode instanceof ShadowRoot)) return
-  const { host } = rootNode
-  if (host instanceof ColorWheelElement) {
-    updateContainerUIModeClass(host)
+  const colorWheel = getHostElement(event.target)
+  if (colorWheel instanceof ColorWheelElement) {
+    updateContainerUIModeClass(colorWheel)
   }
 }
 
@@ -92,7 +88,7 @@ class ColorWheelElement extends HTMLElement {
       const window = this.ownerDocument.defaultView
       if (!window) { return }
       /** @param {PointerEvent} e - event to pass to `callback` */
-      const defaultPrevented = e => { e.preventDefault(); e.stopPropagation(); callback(e) }
+      const defaultPrevented = (e) => { e.preventDefault(); e.stopPropagation(); callback(e) }
       window.addEventListener('pointermove', defaultPrevented, { capture: true })
       window.addEventListener('pointerup', () => {
         window.removeEventListener('pointermove', defaultPrevented, { capture: true })
@@ -193,7 +189,7 @@ class ColorWheelElement extends HTMLElement {
    * @param {string} newValue - new attribute value
    */
   attributeChangedCallback (name, oldValue, newValue) {
-    if (oldValue === newValue) return
+    if (oldValue === newValue) { return }
     switch (name) {
       case 'saturation':
         reflectSaturation(this)
@@ -283,7 +279,7 @@ function getNumericValueFromAttribute (element, attribute, defaultValue) {
  * @param {ColorWheelElement} element - target element
  * @returns {HTMLElement} container element
  */
-const getContainer = element => queryRequired(element.shadowRoot, '.container')
+const getContainer = (element) => queryRequired(element.shadowRoot, '.container')
 
 /**
  * @param {ColorWheelElement} element - target element
@@ -316,13 +312,13 @@ function reflectHsl (element) {
 }
 
 /** @param {ColorWheelElement} element - target element */
-const reflectHue = element => { setContainerProperty(element, '--hue', element.hue) }
+const reflectHue = (element) => { setContainerProperty(element, '--hue', element.hue) }
 /** @param {ColorWheelElement} element - target element */
-const reflectSaturation = element => { setContainerProperty(element, '--saturation', element.saturation) }
+const reflectSaturation = (element) => { setContainerProperty(element, '--saturation', element.saturation) }
 /** @param {ColorWheelElement} element - target element */
-const reflectLightness = element => { reflectHsl(element); setContainerProperty(element, '--lightness', element.lightness) }
+const reflectLightness = (element) => { reflectHsl(element); setContainerProperty(element, '--lightness', element.lightness) }
 /** @param {ColorWheelElement} element - target element */
-const reflectValue = element => { reflectHsl(element); setContainerProperty(element, '--value', element.value) }
+const reflectValue = (element) => { reflectHsl(element); setContainerProperty(element, '--value', element.value) }
 
 const url = new URL(import.meta.url)
 const elementName = url.searchParams.get('named')
