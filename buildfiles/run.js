@@ -436,7 +436,7 @@ async function prepareRelease () {
   await cleanRelease()
   logStartStage('release:prepare', 'check version')
   const publishedVersion = await getLatestPublishedVersion()
-  const packageJson = await readPackageJson()
+  const packageJson = getPackageJson()
   const currentVersion = packageJson.version
 
   const { gt } = await import('semver')
@@ -466,6 +466,26 @@ async function cleanRelease () {
   await rm_rf('dist')
   await rm_rf('package')
   logEndStage()
+}
+
+async function alignTestFrameworkVersion () {
+  const playwrightVersion = await getPlayWrightVersion()
+  const files = await listNonIgnoredFiles({ patterns: ['.github/workflows/*.yaml', '.github/workflows/*.yml'] })
+  const regexp = /(?<=mcr\.microsoft\.com\/playwright:v)(?<version>[.0-9]+)/g
+  const result = await Array.fromAsync(files.map(async (file) => {
+    const data = await readFile(file)
+    const updatedData = data.replaceAll(regexp, playwrightVersion)
+    if (updatedData !== data) {
+      await writeFile(file, updatedData)
+      return file
+    }
+    return ''
+  }))
+  const updatedFiles = result.filter(Boolean)
+  if (updatedFiles.length) {
+    console.log('updated playwright version on files: %s', updatedFiles)
+  }
+  return 0
 }
 
 // @section 4 utils
@@ -1019,14 +1039,21 @@ async function checkNodeModulesFolder () {
 }
 
 async function getLatestPublishedVersion () {
-  const pkg = await readPackageJson()
-
-  const version = await exec(`npm view ${pkg.name} version`)
-  return version.stdout.trim()
+  try {
+    const version = await exec(`npm view ${getPackageJson().name} version`)
+    return version.stdout.trim()
+  } catch {
+    const latestReleasedVersion = await getLatestReleasedVersion()
+    return latestReleasedVersion == null ? 'unreleased' : 'error'
+  }
 }
 
-async function readPackageJson () {
-  return await readFile(pathFromProject('package.json')).then(str => JSON.parse(str))
+function getPackageJson () {
+  const { cache } = getPackageJson
+  if (cache) { return cache }
+  getPackageJson.cache = JSON.parse(readFileSync(pathFromProject('package.json')))
+  setTimeout(() => { getPackageJson.cache = undefined }, 1000).unref()
+  return getPackageJson.cache
 }
 
 // @section 11 versioning utilities
@@ -1045,6 +1072,10 @@ async function getLatestReleasedVersion () {
     return version.releaseDate.match(/[0-9]{4}-[0-9]{2}-[0-9]{2}/)
   })
   return releasedVersion
+}
+
+function getPlayWrightVersion () {
+  return getPackageJson().devDependencies['@playwright/test'].replaceAll('^', '')
 }
 
 // @section 12 badge utilities
@@ -1195,11 +1226,9 @@ async function makeBadgeForTestResult (path) {
 }
 
 async function makeBadgeForLicense (path) {
-  const pkg = await readPackageJson()
-
   const svg = await makeBadge({
     label: ' license',
-    message: pkg.license,
+    message: getPackageJson().license,
     color: getBadgeColors().green,
     logo: asciiIconSvg('🏛'),
   })
