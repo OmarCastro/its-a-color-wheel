@@ -9,7 +9,7 @@ test('CircleInfo.fromRectWithPercentInnerRadius', async ({ step, expect }) => {
       radius: 50,
       center: { x: 150, y: 150 },
       innerRadius: 25,
-      innerRadiusPerc: 50
+      innerRadiusPerc: 50,
     })
   })
 })
@@ -22,7 +22,7 @@ test('CircleInfo.fromRectWithInnerRadius', async ({ step, expect }) => {
       radius: 50,
       center: { x: 150, y: 150 },
       innerRadius: 25,
-      innerRadiusPerc: 50
+      innerRadiusPerc: 50,
     })
   })
 })

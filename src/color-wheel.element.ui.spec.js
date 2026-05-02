@@ -63,7 +63,7 @@ test('slider should follow mouse position when dragging the mouse in desktop mod
 
   const centerPoint = {
     x: colorWheelBoundingBox.x + colorWheelBoundingBox.width / 2,
-    y: colorWheelBoundingBox.y + colorWheelBoundingBox.height / 2
+    y: colorWheelBoundingBox.y + colorWheelBoundingBox.height / 2,
   }
 
   const getSaturation = async () => await colorWheelElement.evaluate(node => parseInt(node.getAttribute('saturation')))
@@ -108,7 +108,7 @@ test('slider rotate following mouse theta position when dragging the mouse in mo
 
   const centerPoint = {
     x: colorWheelBoundingBox.x + colorWheelBoundingBox.width / 2,
-    y: colorWheelBoundingBox.y + colorWheelBoundingBox.height / 2
+    y: colorWheelBoundingBox.y + colorWheelBoundingBox.height / 2,
   }
 
   const getHue = async () => await colorWheelElement.evaluate(node => parseInt(node.getAttribute('hue') ?? '0'))
@@ -151,7 +151,7 @@ test('slider should follow mouse vertical position when dragging the mouse in mo
 
   const sliderCenterPoint = {
     x: sliderBoundingBox.x + sliderBoundingBox.width / 2,
-    y: sliderBoundingBox.y + sliderBoundingBox.height / 2
+    y: sliderBoundingBox.y + sliderBoundingBox.height / 2,
   }
 
   const getSaturation = async () => await colorWheelElement.evaluate(node => parseInt(node.getAttribute('saturation') ?? '0'))
@@ -181,7 +181,7 @@ test('slider should follow mouse vertical position when dragging the mouse in mo
 
   const sliderCenterPoint = {
     x: sliderBoundingBox.x + sliderBoundingBox.width / 2,
-    y: sliderBoundingBox.y + sliderBoundingBox.height / 2
+    y: sliderBoundingBox.y + sliderBoundingBox.height / 2,
   }
 
   const getSaturation = async () => await colorWheelElement.evaluate(node => parseInt(node.getAttribute('saturation') ?? '0'))

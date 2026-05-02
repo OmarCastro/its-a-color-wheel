@@ -5,10 +5,10 @@ test('registerElement - Given an error is thrown from the custom element registr
   const oldCustomElements = globalThis.customElements
   const oldConsole = globalThis.console
   globalThis.customElements = {
-    define: () => { throw new Error('error') }
+    define: () => { throw new Error('error') },
   }
   globalThis.console = {
-    error: () => {}
+    error: () => {},
   }
 
   await expect(() => registerElement()).not.toThrowError()
@@ -20,7 +20,7 @@ test('registerElement - Given an error is thrown from the custom element registr
 test('registerCSSProperties - Given an DOMException is thrown, ignore it, due to the CSS being already registered', async ({ expect }) => {
   const oldCSS = globalThis.CSS
   globalThis.CSS = {
-    registerProperty: () => { throw new DOMException('error') }
+    registerProperty: () => { throw new DOMException('error') },
   }
 
   await expect(() => registerCSSProperties()).not.toThrowError()
@@ -31,7 +31,7 @@ test('registerCSSProperties - Given an DOMException is thrown, ignore it, due to
 test('registerCSSProperties - Given an error other than DOMException is thrown, propagate it', async ({ expect }) => {
   const oldCSS = globalThis.CSS
   globalThis.CSS = {
-    registerProperty: () => { throw new SyntaxError('error') }
+    registerProperty: () => { throw new SyntaxError('error') },
   }
 
   await expect(() => registerCSSProperties()).toThrowError()

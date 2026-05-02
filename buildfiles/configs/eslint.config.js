@@ -101,7 +101,7 @@ export default [
       sourceType: 'module',
     },
     rules: {
-      curly: 'error',
+      'curly': 'error',
       'no-unused-vars': [
         'error',
         {

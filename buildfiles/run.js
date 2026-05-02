@@ -54,7 +54,7 @@ const helpTask = {
 }
 
 const tasks = {
-  build: {
+  'build': {
     description: 'builds the project',
     cb: () => execBuild().then(exit),
   },
@@ -62,11 +62,11 @@ const tasks = {
     description: 'runs build for github action',
     cb: () => execGithubBuildWorkflow().then(exit),
   },
-  test: {
+  'test': {
     description: 'builds the project',
     cb: () => execTests().then(exit),
   },
-  lint: {
+  'lint': {
     description: 'validates the code',
     cb: () => execlintCode().then(exit),
   },
@@ -82,7 +82,7 @@ const tasks = {
     description: 'formats only changed files code',
     cb: () => execFormatCodeOnChanged().then(exit),
   },
-  dev: {
+  'dev': {
     description: 'setup dev environment',
     cb: async () => { await execDevEnvironment(); process.exit(0) },
   },
@@ -110,7 +110,7 @@ const tasks = {
     description: 'clean release preparation',
     cb: async () => { await cleanRelease(); process.exit(0) },
   },
-  help: helpTask,
+  'help': helpTask,
   '--help': helpTask,
   '-h': helpTask,
 }
@@ -145,7 +145,7 @@ async function execDevEnvironment ({ openBrowser = false } = {}) {
 
   const watcher = watchDirs(
     new URL('src', projectPathURL).pathname,
-    new URL('docs', projectPathURL).pathname
+    new URL('docs', projectPathURL).pathname,
   )
 
   for await (const change of watcher) {
@@ -545,7 +545,7 @@ async function openTestServer () {
 }
 
 function wait (ms) {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     setTimeout(resolve, ms)
   })
 }
@@ -755,6 +755,7 @@ async function minifyCss (cssText) {
   const result = await esbuild.transform(cssText, { loader: 'css', minify: true })
   return result.code
 }
+
 /**
  * Minifies the DOM tree
  * @param {Element} domElement - target DOM tree root element
@@ -853,7 +854,7 @@ async function minifyDOM (domElement) {
  */
 function cmdSpawn (command, options = {}) {
   const p = spawn('/bin/sh', ['-c', command], { stdio: 'inherit', ...options })
-  return new Promise((resolve) => { p.on('exit', resolve) })
+  return new Promise(resolve => { p.on('exit', resolve) })
 }
 
 async function execCmd (command, args) {
@@ -886,7 +887,7 @@ async function * getFiles (dir) {
 
 async function getFilesAsArray (dir) {
   const arr = []
-  for await (const i of getFiles(dir)) {arr.push(i)}
+  for await (const i of getFiles(dir)) { arr.push(i) }
   return arr
 }
 
@@ -1291,7 +1292,7 @@ async function createModuleGraphSvg (moduleGrapnJson) {
       return [file, {
         textWidthPx, textHeighthPx, height, width,
       }]
-    })
+    }),
   )
 
   Object.entries(inputs).forEach(([file, info]) => {
