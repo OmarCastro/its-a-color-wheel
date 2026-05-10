@@ -2,6 +2,7 @@ import { calculateDistanceBetween2Points, CircleInfo } from './geometry.js'
 import { registerElement, registerCSSProperties, getHostElement } from './util.js'
 import html from './color-wheel.element.html'
 import css from './color-wheel.element.css'
+/** @import {Point, Disk} from './geometry.js' */
 
 let loadTemplate = () => {
   const templateElement = document.createElement('template')
@@ -122,17 +123,7 @@ class ColorWheelElement extends HTMLElement {
       const disk = getRadiusValues()
 
       const { hue } = this
-
-      /**
-       * @param {PointerEvent} e - pointermove event
-       * @returns {number} theta value in degrees
-       */
-      const getAngle = (e) => {
-        const deltaX = e.clientX - centerPoint.x
-        const deltaY = centerPoint.y - e.clientY
-        const thetaRadians = Math.atan2(deltaY, deltaX)
-        return thetaRadians * -180 / Math.PI
-      }
+      const getAngle = calculateAngle.bind(this, centerPoint)
 
       const initDeg = getAngle(pointerEvent)
       const uiMode = this.uiMode
@@ -249,8 +240,20 @@ class ColorWheelElement extends HTMLElement {
 }
 
 /**
- * @param {import('./geometry.js').Disk} disk - color wheel geometry
- * @param {import('./geometry.js').Point} point - target position
+ * @param {Point} centerPoint - center point of color wheel element
+ * @param {PointerEvent} pointerEvent - pointermove event
+ * @returns {number} theta value in degrees
+ */
+function calculateAngle (centerPoint, pointerEvent) {
+  const deltaX = pointerEvent.clientX - centerPoint.x
+  const deltaY = centerPoint.y - pointerEvent.clientY
+  const thetaRadians = Math.atan2(deltaY, deltaX)
+  return thetaRadians * -180 / Math.PI
+}
+
+/**
+ * @param {Disk} disk - color wheel geometry
+ * @param {Point} point - target position
  * @returns {number} saturation value, will not go below 0 or above 100
  */
 function calculateSaturation (disk, point) {
