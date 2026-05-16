@@ -16,7 +16,10 @@ To help navigate this file is divided by sections:
 @section 11 versioning utilities
 @section 12 badge utilities
 @section 13 module graph utilities
-@section 14 build tools plugins
+@section 14 docker utilities
+@section 15 git utilities
+@section 16 build tools plugins
+
 */
 import process from 'node:process'
 import fs, { readFile as fsReadFile, writeFile } from 'node:fs/promises'
@@ -109,6 +112,10 @@ const tasks = {
   'release:clean': {
     description: 'clean release preparation',
     cb: async () => { await cleanRelease(); process.exit(0) },
+  },
+  'pre-commit-check': {
+    description: 'executes pre-commit validation, validates the project with the staged changes only',
+    cb: () => preCommitCheck().then(exit),
   },
   'help': helpTask,
   '--help': helpTask,
@@ -423,6 +430,22 @@ async function execFormatCodeOnChanged () {
   const returnCodeLint = await formatCode({ onlyChanged: true })
   logEndStage()
   return returnCodeLint
+}
+
+async function preCommitCheck () {
+  logStartStage('precommit', 'lint and test')
+
+  const result = await executeOnStagedOnly(async () => {
+    const testTask = execTests()
+    const codeLint = execlintCodeOnChanged()
+    const testVersionAlign = alignTestFrameworkVersion()
+
+    const exitCodes = await Promise.all([testTask, codeLint, testVersionAlign])
+    const exitCode = exitCodes.reduce((a, b) => a + b)
+    return exitCode
+  })
+  logEndStage()
+  return result
 }
 
 async function execGithubBuildWorkflow () {
@@ -1379,7 +1402,49 @@ async function createModuleGraphSvg (moduleGrapnJson) {
   </svg>`
 }
 
-// @section 14 build tools plugins
+// @section 14 docker utilities
+
+
+// @section 15 git utilities
+
+async function git (/** @type {string[]} */...args) {
+  return (await execCmd('git', args.flat())).stdout.trim().toString().split('\n')
+}
+
+async function listStashedFiles () {
+  const diffExec = git('diff', '--name-only', '--staged')
+  return new Set([...(await diffExec)].filter(filename => filename.trim().length > 0))
+}
+
+async function executeOnStagedOnly (callback, { stageChanges = true } = {}) {
+  const stagedFiles = await listStashedFiles()
+  if (stagedFiles.size > 0) {
+    logStage('Stash unstaged + untracked files')
+    await git('stash', 'push', '--keep-index', '-u', '-m', 'Stash unstaged + untracked files')
+    let returnCode = 0
+    try {
+      logStage('executing tasks on staged only')
+      returnCode = await callback()
+    } catch {
+      returnCode = 1
+    } finally {
+      if (returnCode === 0 && stageChanges) {
+        logStage('Staging new changes')
+        await git('add', '-u')
+      } else {
+        logStage('cleaning up changes')
+        await git('restore', '.')
+      }
+      logStage('Pop stash')
+      await git('stash', 'pop', '--index')
+    }
+    return returnCode
+  }
+  return 0
+}
+
+
+// @section 16 build tools plugins
 
 /**
  * @returns {Promise<import('esbuild').Plugin>} - esbuild plugin
