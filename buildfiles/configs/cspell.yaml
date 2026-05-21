@@ -2,7 +2,7 @@
 language: en
 ignorePaths: 
   - "**/*.spec.js"
-  - "**/dev-tools/**"
+  - "**/buildfiles/**"
   - "**/smoke-test/**"
   - "**/docs/assets/**"
   - "**/docs/doc.js"

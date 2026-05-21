@@ -136,6 +136,10 @@ async function main () {
     return process.exit(1)
   }
 
+  const isInsideDocker = await isInsideDockerContainer()
+  if (!isInsideDocker) {
+    await checkGitHooks()
+  }
   await checkNodeModulesFolder()
   await tasks[taskName].cb()
   return process.exit(0)
@@ -213,6 +217,8 @@ async function execTests () {
   await mkdir_p('build/docs')
   await cp_R('reports', 'build/docs/reports')
   logEndStage()
+
+  return 0
 }
 
 async function buildTest () {
@@ -1404,11 +1410,32 @@ async function createModuleGraphSvg (moduleGrapnJson) {
 
 // @section 14 docker utilities
 
+async function isInsideDockerContainer () {
+  isInsideDockerContainer.cachedResult ??= existsSync('/.dockerenv') ||
+    (await readFile('/proc/self/cgroup').then(text => text.includes('docker')).catch(() => false)) ||
+    (await readFile('/proc/self/mountinfo').then(text => text.includes('/docker/containers/')).catch(() => false))
+  return isInsideDockerContainer.cachedResult
+}
 
 // @section 15 git utilities
 
 async function git (/** @type {string[]} */...args) {
   return (await execCmd('git', args.flat())).stdout.trim().toString().split('\n')
+}
+
+async function checkGitHooks () {
+  const expectedHooksPath = pathFromDevTools('git-hooks/')
+  const stdoutLines = await git('config', 'get', 'core.hooksPath').catch(() => [])
+  const hooksPath = stdoutLines[0]
+  if (hooksPath !== expectedHooksPath) {
+    if (hooksPath == null || hooksPath.trim() === '') {
+      console.log('git hooks not set, setting git hooks path to ', expectedHooksPath)
+    } else {
+      console.log('updating git hooks path to ', expectedHooksPath)
+    }
+
+    await git('config', 'set', 'core.hooksPath', expectedHooksPath)
+  }
 }
 
 async function listStashedFiles () {
