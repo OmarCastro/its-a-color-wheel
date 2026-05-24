@@ -47,7 +47,7 @@
     "esbuild": "^0.28.0",
     "eslint": "^10.4.0",
     "eslint-plugin-import-x": "^4.16.2",
-    "eslint-plugin-jsdoc": "^62.9.0",
+    "eslint-plugin-jsdoc": "^63.0.0",
     "eslint-plugin-unicorn": "^64.0.0",
     "expect": "^30.4.1",
     "glob": "^13.0.6",
@@ -58,7 +58,7 @@
     "mkcert": "^3.2.0",
     "open": "^11.0.0",
     "prismjs": "^1.30.0",
-    "semver": "^7.8.0",
+    "semver": "^7.8.1",
     "stylelint": "^17.11.1",
     "stylelint-config-standard": "^40.0.0",
     "typescript": "^6.0.3"
