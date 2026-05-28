@@ -1,4 +1,4 @@
-import { test } from '../test-utils/unit/test.ts'
+import { test } from '#unit-test'
 import { registerElement, registerCSSProperties } from './util.js'
 
 test('registerElement - Given an error is thrown from the custom element registry, it does not stop execution', async ({ step, expect }) => {

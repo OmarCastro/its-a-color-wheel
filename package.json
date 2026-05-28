@@ -34,6 +34,9 @@
   "bugs": {
     "url": "https://github.com/OmarCastro/its-a-color-wheel/issues"
   },
+  "imports": {
+    "#unit-test": "./test-utils/unit/test.util.js"
+  },
   "homepage": "https://github.com/OmarCastro/its-a-color-wheel#readme",
   "devDependencies": {
     "@dagrejs/dagre": "^3.0.0",
@@ -62,5 +65,8 @@
     "stylelint": "^17.12.0",
     "stylelint-config-standard": "^40.0.0",
     "typescript": "^6.0.3"
+  },
+  "dependencies": {
+    "object-inspect": "^1.13.4"
   }
 }

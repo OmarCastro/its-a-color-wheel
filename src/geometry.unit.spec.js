@@ -1,4 +1,4 @@
-import { test } from '../test-utils/unit/test.ts'
+import { test } from '#unit-test'
 import { CircleInfo, calculateDistanceBetween2Points } from './geometry.js'
 
 test('CircleInfo.fromRectWithPercentInnerRadius', async ({ step, expect }) => {
