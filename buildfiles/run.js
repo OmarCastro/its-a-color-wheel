@@ -69,6 +69,10 @@ const tasks = {
     description: 'builds the project',
     cb: () => execTests().then(exit),
   },
+  'test:unit-only': {
+    description: 'quickly run unit tests of the project, showing a simple report, mostly used for precommit check',
+    cb: () => quickRunUnitTests().then(exit),
+  },
   'lint': {
     description: 'validates the code',
     cb: () => execlintCode().then(exit),
@@ -167,6 +171,14 @@ async function execDevEnvironment ({ openBrowser = false } = {}) {
   }
 }
 
+async function quickRunUnitTests () {
+  logStartStage('test', 'quick build & run unit tests')
+  await buildUnitTests()
+  const result = await cmdSpawn('TZ=UTC node build/tests/run-unit-tests.js')
+  logEndStage()
+  return result
+}
+
 async function execTests () {
   const COVERAGE_DIR = 'reports/coverage'
   const REPORTS_TMP_DIR = 'reports/.tmp'
@@ -221,12 +233,11 @@ async function execTests () {
   return 0
 }
 
-async function buildTest () {
-  logStartStage('build:test', 'bundle')
-
-  const esbuild = await import('esbuild')
-
-  const commonBuildParams = {
+/**
+ * @returns {import('esbuild').BuildOptions} common build option for esbuild
+ */
+function esBuildCommonParams () {
+  return {
     target: ['es2022'],
     bundle: true,
     minify: false,
@@ -234,6 +245,15 @@ async function buildTest () {
     absWorkingDir: pathFromProject('.'),
     logLevel: 'info',
   }
+}
+
+
+async function buildTest () {
+  logStartStage('build:test', 'bundle')
+
+  const esbuild = await import('esbuild')
+
+  const commonBuildParams = esBuildCommonParams()
 
   const buildPath = 'build'
   const esmDistPath = `${buildPath}/dist/esm`
@@ -284,10 +304,7 @@ async function buildTest () {
     splitting: true,
     chunkNames: 'chunk/[name].[hash]',
     format: 'esm',
-    loader: {
-      '.element.html': 'text',
-      '.element.css': 'text',
-    },
+    plugins: [await getESbuildPlugin()],
   })
 
   /**
@@ -311,6 +328,9 @@ async function buildTest () {
   await exec(`${process.argv[0]} buildfiles/scripts/build-html.js test-page.html`)
 
   logStage('move to final dir')
+
+  await buildUnitTests({ includeBrowser: true })
+
   logEndStage()
 }
 
@@ -377,6 +397,80 @@ async function buildESM (outputDir) {
   })
 
   await Promise.all([...fileListJsJob, ...fileListCssJob, ...fileListHtmlJob])
+}
+
+async function buildUnitTests ({ includeBrowser = false } = {}) {
+  const toImportCode = (outputPathFolder, file) => {
+    const importPath = relative(outputPathFolder, file)
+    return `import ${JSON.stringify(importPath)}\n`
+  }
+
+  const unitTestFiles = await listNonIgnoredFiles({ patterns: ['*.unit.spec.js'] })
+
+  const outputs = [{
+    setupPath: 'test-utils/unit/setup-unit-test-systems.js',
+    outputPath: 'build/tests/run-unit-tests.js',
+  }, {
+    setupPath: 'test-utils/unit/setup-unit-test-browser.js',
+    outputPath: 'build/tests/run-unit-tests--browser.js',
+  }, {
+    setupPath: 'test-utils/unit/setup-unit-test-browser.js',
+    outputPath: 'build/docs/tests/unit-tests.js',
+  }]
+
+  const unitTestRunnerAssets = {
+    html: null,
+    badge: null,
+  }
+
+  await Promise.all(outputs.map(async ({ setupPath, outputPath }) => {
+    const isBrowser = setupPath === 'test-utils/unit/setup-unit-test-browser.js'
+    if (isBrowser && !includeBrowser) {
+      return
+    }
+    const outputPathFolder = dirname(outputPath)
+    const outputPathNoExtension = outputPath.slice(0, outputPath.lastIndexOf('.'))
+    const outputPathMinified = outputPathNoExtension + '.min.js'
+    await mkdir_p(outputPathFolder)
+
+    const testSetupCode = toImportCode(outputPathFolder, setupPath)
+    const testFileImports = unitTestFiles.map(file => toImportCode(outputPathFolder, file)).join('')
+    const code = testSetupCode + testFileImports
+    await writeFile(outputPath, code)
+    if (!isBrowser) {
+      return
+    }
+
+    const esbuild = await import('esbuild')
+    await esbuild.build({
+      ...esBuildCommonParams(),
+      entryPoints: [outputPath],
+      outfile: outputPathMinified,
+      platform: isBrowser ? 'browser' : 'node',
+      format: 'esm',
+      minify: true,
+    })
+
+    unitTestRunnerAssets.html ??= readFile(pathFromDevTools('assets/unit-test-runner-page.html'))
+    const htmlOutputPath = outputPathNoExtension + '.html'
+    const badgeOutputPath = outputPathNoExtension + '.badge.svg'
+    const htmlContent = (await unitTestRunnerAssets.html)
+      .replaceAll('{{test-run-script}}', relative(outputPathFolder, outputPathMinified))
+      .replaceAll('{{badge-img-href}}', relative(outputPathFolder, badgeOutputPath))
+    await writeFile(htmlOutputPath, htmlContent)
+    unitTestRunnerAssets.badge ??= await (async () => {
+      const svg = await makeBadge({
+        label: 'in browser tests',
+        message: 'Running...',
+        color: getBadgeColors().blue,
+        logo: asciiIconSvg('✔'),
+      })
+
+      return await applyA11yTheme(svg, { replaceIconToText: '✔' })
+    })()
+
+    await writeFile(badgeOutputPath, unitTestRunnerAssets.badge)
+  }))
 }
 
 async function execBuild () {
