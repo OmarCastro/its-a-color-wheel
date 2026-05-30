@@ -4,6 +4,7 @@ globalThis[Symbol.for('custom-unit-test-setup')] = async function setupUnitTests
   const { window, resetDom } = await import('./fixtures/dom.unit.fixture.js')
   const { setup: setupFetchMock, teardown: teardownFetchMock } = await import('./fixtures/fetch.unit.fixture.js')
   const { setup: setupTimezoneMock, teardown: teardownTimezoneMock } = await import('./fixtures/timezone.unit.fixture.js')
+  const { setup: setupConsoleMock, teardown: teardownConsoleMock } = await import('./fixtures/console.unit.fixture.js')
   const { setup: setupGCFixture } = await import('./fixtures/garbage-collector.unit.fixture.js')
 
   /**
@@ -92,6 +93,11 @@ globalThis[Symbol.for('custom-unit-test-setup')] = async function setupUnitTests
               fixtureCache.fetch ??= setupFetchMock()
               postTestCallbacks.add(teardownFetchMock)
               return fixtureCache.fetch
+            },
+            get console () {
+              fixtureCache.console ??= setupConsoleMock()
+              postTestCallbacks.add(teardownConsoleMock)
+              return fixtureCache.console
             },
           })
         } finally {
