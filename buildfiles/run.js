@@ -536,7 +536,7 @@ async function preCommitCheck () {
   logStartStage('precommit', 'lint and test')
 
   const result = await executeOnStagedOnly(async () => {
-    const testTask = execTests()
+    const testTask = quickRunUnitTests()
     const codeLint = execlintCodeOnChanged()
     const testVersionAlign = alignTestFrameworkVersion()
 
