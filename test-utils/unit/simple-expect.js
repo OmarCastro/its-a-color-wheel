@@ -53,15 +53,39 @@ function checkDeepEquals (a, b, stack) {
 export const isEqual = (a, b) => checkDeepEquals(a, b, [])
 
 
+const validateNotThrows = (method, expectedError) => {
+  let errorCaught
+  try {
+    method()
+  } catch (e) {
+    errorCaught = e
+    if(expectedError instanceof Function){
+      invariant(!(e instanceof expectedError), formatted`Expected function to not throw ${expectedError.name}`)
+    } else if(expectedError != null){
+      const errorCaughtMessage = e instanceof Error ? e.message : String(e)
+      const expectedMessage = expectedError instanceof Error ? expectedError.message : String(expectedError)
+      invariant(!Object.is(errorCaughtMessage, expectedMessage), formatted`Expected function to not throw error with message ${expectedMessage}`)
+    }
+  }
+  invariant(errorCaught === undefined, formatted`Expected function to not throw error`)
+}
+
+const validateError = (error, expectedError) => {
+  if(expectedError instanceof Function){
+    invariant(error instanceof expectedError, formatted`Expected function to throw ${expectedError.name}`)
+  } else if(expectedError != null){
+    const errorCaughtMessage = error instanceof Error ? error.message : String(error)
+    const expectedMessage = expectedError instanceof Error ? expectedError.message : String(expectedError)
+    invariant(Object.is(errorCaughtMessage, expectedMessage), formatted`Expected function to throw error with message ${expectedMessage}`)
+  }
+}
 const validateThrows = (method, expectedError) => {
   let errorCaught
   try {
     method()
   } catch (e) {
     errorCaught = e
-    const errorCaughtMessage = e instanceof Error ? e.message : String(e)
-    const expectedMessage = expectedError instanceof Error ? expectedError.message : String(expectedError)
-    invariant(Object.is(errorCaughtMessage, expectedMessage), formatted`Expected function to throw error with message ${expectedMessage}`)
+    validateError(errorCaught, expectedError)
   }
   invariant(errorCaught !== undefined, formatted`Expected function to throw error`)
 }
@@ -72,9 +96,7 @@ const validateRejects = async (method, expectedError) => {
     await method()
   } catch (e) {
     errorCaught = e
-    const errorCaughtMessage = e instanceof Error ? e.message : String(e)
-    const expectedMessage = expectedError instanceof Error ? expectedError.message : String(expectedError)
-    invariant(Object.is(errorCaughtMessage, expectedMessage), formatted`Expected function to reject with message ${expectedMessage}`)
+    validateError(errorCaught, expectedError)
   }
   invariant(errorCaught !== undefined, formatted`Expected function to reject`)
 }
@@ -83,8 +105,14 @@ const validateRejects = async (method, expectedError) => {
 export const expect = (target) => ({
   toBe: (expected) => invariant(Object.is(target, expected), formatted`Expected ${target} to be ${expected}`),
   toEqual: (expected) => invariant(isEqual(target, expected), formatted`Expected ${target} to equal ${expected}`),
-  toStrictEqual: (expected) => invariant(isEqual(target, expected), formatted`Expected ${target} to toStrictEqual ${expected}`),
+  toStrictEqual: (expected) => invariant(isEqual(target, expected), formatted`Expected ${target} to strict equal ${expected}`),
   toThrow: (expected) => validateThrows(target, expected),
+  not: {
+    toBe: (expected) => invariant(!Object.is(target, expected), formatted`Expected ${target} to not be ${expected}`),
+    toEqual: (expected) => invariant(!isEqual(target, expected), formatted`Expected ${target} to not equal ${expected}`),
+    toStrictEqual: (expected) => invariant(!isEqual(target, expected), formatted`Expected ${target} to not strict equal ${expected}`),
+    toThrow: (expected) => validateNotThrows(target, expected),
+  },
   resolves: {
     toBe: async (expected) => invariant(Object.is(await target, expected), formatted`Expected promise to resolve to be ${expected}`),
     toEqual: async (expected) => invariant(isEqual(await target, expected), formatted`Expected promise to resolve to equal ${expected}`),
