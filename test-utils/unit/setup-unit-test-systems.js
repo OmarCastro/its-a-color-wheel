@@ -1,11 +1,6 @@
 /** @import { Expect } from 'expect' */
 globalThis[Symbol.for('custom-unit-test-setup')] = async function setupUnitTestsForSystems () {
   const { expect } = await import('./simple-expect.js')
-  const { window, resetDom } = await import('./fixtures/dom.unit.fixture.js')
-  const { setup: setupFetchMock, teardown: teardownFetchMock } = await import('./fixtures/fetch.unit.fixture.js')
-  const { setup: setupTimezoneMock, teardown: teardownTimezoneMock } = await import('./fixtures/timezone.unit.fixture.js')
-  const { setup: setupConsoleMock, teardown: teardownConsoleMock } = await import('./fixtures/console.unit.fixture.js')
-  const { setup: setupGCFixture } = await import('./fixtures/garbage-collector.unit.fixture.js')
 
   /**
    * @param {string} message - message to show on the report on skip
@@ -65,43 +60,24 @@ globalThis[Symbol.for('custom-unit-test-setup')] = async function setupUnitTests
     process.exit(1)
   }, 250)
 
+  let fixturesProto = {}
+
   const unitTests = []
   const test = (description, testFunction) => {
+    fixturesProto = loadFixtures(fixturesProto, testFunction)
     unitTests.push({
       description,
       test: async () => {
-        const postTestCallbacks = new Set()
-        const fixtureCache = {}
+        const fixtureObj = Object.create(fixturesProto)
+        fixturesProto[cacheProp] = {}
+        fixturesProto[postTestCallback] = new Set()
+
+        fixtureObj.expect = expect
+        fixtureObj.step = async (_, callback) => await callback()
         try {
-          await testFunction({
-            step: async (_, callback) => await callback(),
-            expect,
-            get dom () {
-              resetDom()
-              return window
-            },
-            get gc () {
-              fixtureCache.gc ??= setupGCFixture()
-              return fixtureCache.gc
-            },
-            get timezone () {
-              fixtureCache.timezone ??= setupTimezoneMock()
-              postTestCallbacks.add(teardownTimezoneMock)
-              return fixtureCache.timezone
-            },
-            get fetch () {
-              fixtureCache.fetch ??= setupFetchMock()
-              postTestCallbacks.add(teardownFetchMock)
-              return fixtureCache.fetch
-            },
-            get console () {
-              fixtureCache.console ??= setupConsoleMock()
-              postTestCallbacks.add(teardownConsoleMock)
-              return fixtureCache.console
-            },
-          })
+          await testFunction(fixtureObj)
         } finally {
-          postTestCallbacks.forEach(callback => callback())
+          fixturesProto[postTestCallback].forEach(callback => callback())
         }
 
       },
@@ -111,4 +87,62 @@ globalThis[Symbol.for('custom-unit-test-setup')] = async function setupUnitTests
   }
 
   return { test, expect }
+}
+
+const loadersProp = Symbol("loadersProp")
+const cacheProp = Symbol("cacheProp")
+const postTestCallback = Symbol("postTestCallback")
+
+const fixtureLoaderMap = {
+  dom: async () => await import('./fixtures/dom.unit.fixture.js'),
+  fetch: async () => await import('./fixtures/fetch.unit.fixture.js'),
+  console: async () => await import('./fixtures/console.unit.fixture.js'),
+  timezone: async () => await import('./fixtures/timezone.unit.fixture.js'),
+  gc: async () => await import('./fixtures/garbage-collector.unit.fixture.js'),
+}
+
+function loadFixtures(fixturesObj, fn){
+  const loadProps = fixturesObj[loadersProp] ?? {}
+  const fixturesToLoad = extractFixtureNamesToLoad(fn)
+  if(fixturesToLoad.every(name => Object.hasOwn(loadProps, name))){
+    return fixturesObj
+  }
+  for(const name of fixturesToLoad) {
+    if(Object.hasOwn(loadProps, name) || !Object.hasOwn(fixtureLoaderMap, name)){ continue }
+    const start = performance.now()
+    loadProps[name] = fixtureLoaderMap[name]().then(result => {
+      console.log(`[unit-test] fixture "${name}" loaded in ${+(performance.now() - start).toFixed(1)}ms`)
+      return result
+    })
+  }
+  return buildFixtureProtoObject(loadProps)
+}
+
+function extractFixtureNamesToLoad(fn){
+  const fnText = String(fn)
+  const fistParenIndex = fnText.indexOf("(") + 1
+  const functionParams = fnText.slice(fistParenIndex, fnText.indexOf(")", fistParenIndex))
+  if(functionParams === "" || functionParams === "{}"){ return [] }
+  const fixturesToLoad = functionParams.slice(1, -1).split(",").map(s => s.trim())
+  return fixturesToLoad
+}
+
+function buildFixtureProtoObject(loadProps){
+  const result = {
+    [loadersProp]: loadProps
+  }
+
+  Object.entries(loadProps).forEach(([name, fixtureLoader]) => {
+    fixtureLoader.then(({setup, teardown}) => {
+      Object.defineProperty(result, name, {
+        get(){
+          this[cacheProp][name] ??= setup()
+          typeof teardown === "function" && this[postTestCallback].add(teardown)
+          return this[cacheProp][name]
+        }
+      })
+    })
+  })
+
+  return result
 }

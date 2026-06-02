@@ -49,3 +49,11 @@ if ('Deno' in globalThis || globalThis.window == null) {
 /** @type {Window} */
 export const window = windowObj
 export const resetDom = () => domResetFunction()
+
+export function setup () {
+  return window
+}
+
+export function teardown () {
+  return resetDom()
+}
