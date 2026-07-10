@@ -13,7 +13,6 @@ globalThis[Symbol.for('custom-unit-test-setup')] = async function setupUnitTests
     if (!(this instanceof SkipException)) { return new SkipException(message) }
     this.message = message
   }
-
   async function runTests () {
     const startTestTimestamp = performance.now()
     const totalAmount = unitTests.length

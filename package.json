@@ -48,15 +48,15 @@
     "chokidar": "^5.0.0",
     "cspell": "^10.0.1",
     "esbuild": "^0.28.1",
-    "eslint": "^10.6.0",
+    "eslint": "^10.7.0",
     "eslint-plugin-import-x": "^4.17.1",
-    "eslint-plugin-jsdoc": "^63.0.12",
+    "eslint-plugin-jsdoc": "^63.0.13",
     "eslint-plugin-unicorn": "^71.1.0",
     "expect": "^30.4.1",
     "glob": "^13.0.6",
     "image-size": "^2.0.2",
     "jsdom": "^29.1.1",
-    "marked": "^18.0.5",
+    "marked": "^18.0.6",
     "minimatch": "^10.1.1",
     "mkcert": "^3.2.0",
     "open": "^11.0.0",
@@ -64,7 +64,7 @@
     "semver": "^7.8.5",
     "stylelint": "^17.14.0",
     "stylelint-config-standard": "^40.0.0",
-    "typescript": "^6.0.3"
+    "typescript": "^7.0.2"
   },
   "dependencies": {
     "object-inspect": "^1.13.4"
